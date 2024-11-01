@@ -189,6 +189,8 @@ For an in-depth explanation of the settings within the configuration files, refe
 ./run.sh retrieve
 ```
 
+Enter 'retrieve' at the prompt to confirm that you're ready to create the project tables.
+
 You should see the following tables created in Xray:
 - rest_projects
 - rest_testcases
@@ -212,46 +214,24 @@ Once you see the messages `Zephyr test cycle additional attachments retrieval sc
 ./run.sh migrate
 ```
 
-2. This script will extract data from the ALM Octane database and load it into newly created Airbyte tables in the TestRail database. These tables, all of which are prefixed with `_airbyte_raw_`, will later be used to migrate the data into TestRail tables.
-1. For informational purposes, you can access the Airbyte UI at the URL and port specified in its configuration. The default URL is `localhost:8000`.
-1. Once you see the message `✅ Job finished!` with a status of `succeeded`, the Airbyte migration is complete.
+Enter 'migrate' at the prompt to confirm that you're ready to migrate the data.
 
-### ALM Octane migration scripts (Transform)
+This script will extract data from the Zephyr database and load it into the Xray database.
 
-1. The data extracted from the ALM Octane database may contain multiple workspaces.
-To choose which of these workspaces you want to migrate to TestRail projects, run the following command:
+You should see the following messages when the migration is complete:
+- `Zephyr migration complete!`
+- Please restart your Jira server and perform a re-index from the System settings panel for the changes to take effect.
 
-```console
-./run.sh enumerate
-```
+The second of those messages mentions the steps outlined in the next section.
 
-2. This script will walk you through each ALM Octane workspace found in the Airbyte data, and prompt you to decide if you want to migrate them. To accept the currently specified workspace, press `y` for yes.
-To skip the currently specified workspace, press `n` for no.
-1. You can also accept the current specified workspace and all remaining workspaces by pressing `a` for all, or skip the currently specified workspace and all remaining workspaces by pressing `n` for none.
-1. Once you've made your selections, the workspaces will be enumerated in `config/octane/octane-workspaces.yml`. You can further edit this file to make changes to the configuration.
+### Restart and re-index Jira server
 
-5. To begin migrating the data corresponding to the workspaces enumerated in the previous step, run the following command:
-
-```console
-./run.sh migrate
-```
-
-6. Enter `migrate` at the prompt to confirm that you're ready to migrate the data to TestRail.
-1. This will begin the migration process. Each migration script will run in sequence, and will output logs to both the console and to a log file in the `/logs` directory.
-1. Once you see the message `ALM Octane migration complete!`, the migration is finished.
-
-The full list of migration scripts are documented in in the [Octane migration scripts documentation](./Docs/octane-migration-scripts.md).
-
-9. To migrate attachment files from ALM Octane to TestRail (e.g. image files, text files, etc.), run the following command:
-
-```console
-./run.sh migrate-attachments
-```
-
-10. Confirm that you're ready to migrate the attachment files by entering `migrate` at the prompt.
-1. Once confirmed, the script will copy attachment files from the ALM Octane attachment storage location to the TestRail attachment storage location. The script will output logs to both the console and to a log file in the `/logs` directory.
-1. You may see warnings about missing attachment files if they are not found, but the migration will continue without issue if the first copy attempt succeeds.
-1. Once you see the message `ALM Octane attachment migration complete!`, the migration is finished.
+1. To see the changes from the migration take effect, you must first restart your Jira server. You can do this by connecting to the server via SSH and running `service jira restart` with a user that has sufficient permissions, or by restarting the Docker container running the Jira server.
+1. Once the Jira server is restarted, log in via the web browser and navigate to settings by clicking the gear icon in the top right corner and selecting "System" from the dropdown menu.
+1. Scroll to the "Advanced" section in the left sidebar, and click "Indexing".
+1. Select the "Full re-index" option, and click the "Re-index" button.
+1. Click "Re-index" in the confirmation dialog to begin reindexing.
+1. Once the progress bar reaches 100% and you see the message "Re-indexing is 100% complete," check that the migration has taken effect by navigating to the migrated Zephyr project in the web UI from the Projects tab at the top of the page.
 
 ### Reconciliation reporting
 
@@ -261,37 +241,37 @@ The full list of migration scripts are documented in in the [Octane migration sc
 ./run.sh report
 ```
 
-2. The script will output a spreadsheet in the `/reports` directory, showing the reconciliation of data between ALM Octane and TestRail. A command to open the report will be displayed in the console (e.g. `open ./reports/octane-report-2024-06-28T15:00:00Z.xlsx`). The command will open the report in your default spreadsheet application.
+2. The script will output a spreadsheet in the `/reports` directory, showing the reconciliation of data between Zephyr and Xray. A command to open the report will be displayed in the console (e.g. `open ./reports/xray-report-2024-06-28T15:00:00Z.xlsx`). The command will open the report in your default spreadsheet application.
 
 ## Additional Information
 
 ### Cleaning migrated data
 
 > [!WARNING]
-> Cleaning migrated data means removing all the data that was copied to TestRail as a result of running the migration. Only perform this step if you want to "rollback" the migration and remove the migrated data.
+> Cleaning migrated data means removing all the data that was copied to Xray as a result of running the migration. Only perform this step if you want to "rollback" the migration and remove the migrated data.
 
-1. After you've run the migration scripts, you may choose to remove the migrated data from the TestRail database. To do this, run the following command:
+1. After you've run the migration scripts, you may choose to remove the migrated data from the Xray database. To do this, run the following command:
 
 ```console
 ./run.sh clean
 ```
 
-2. Enter `clean` at the prompt to confirm that you're ready to remove the migrated data from TestRail.
-1. Once confirmed, the script will remove the migrated data from the TestRail database. No data that already existed in TestRail separately from the migration will be removed. The script will output logs to both the console and to a log file in the `/logs` directory.
+2. Enter `clean` at the prompt to confirm that you're ready to remove the migrated data from Xray.
+1. Once confirmed, the script will remove the migrated data from the Xray database. No data that already existed in Xray separately from the migration will be removed.
 
-### Cleaning Airbyte data
+### Cleaning retrieved data
 
 > [!CAUTION]
-> Cleaning Airbyte data means removing all the data that was extracted from ALM Octane and loaded into the TestRail database. This data contains a ledger record of the resulting transformation and migration of the data into the TestRail tables. If you remove the Airbyte data you will no longer be able to use this ledger record to clean the migrated data from TestRail in a migration "rollback".
+> Cleaning retrieved data means removing all the data that was extracted from Zephyr and loaded into the Xray database. This data contains a ledger record of the resulting transformation and migration of the data into the Xray tables. If you remove the retrieved data you will no longer be able to use this ledger record to clean the migrated data from Xray in a migration "rollback".
 
-1. Once you've cleaned the migrated data from TestRail, you may want to remove the Airbyte tables that were created during the Airbyte migration. To do this, run the following command:
+1. Once you've cleaned the migrated data from Xray, you may want to remove the Zephyr tables that were created during the Zephyr migration. To do this, run the following command:
 
 ```console
-./run.sh clean-airbyte
+./run.sh clean-rest
 ```
 
-2. Enter `clean` at the prompt to confirm that you're ready to remove the Airbyte tables from the TestRail database.
-1. Once confirmed, the script will remove the Airbyte tables from the TestRail database. The script will output logs to both the console and to a log file in the `/logs` directory.
+2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr tables from the Xray database.
+1. Once confirmed, the script will remove the Zephyr tables from the Xray database.
 
 ### Stopping the Docker containers
 
@@ -320,16 +300,6 @@ This command will stop and remove the container, and remove the following direct
 - `/logs`
 - `/reports`
 
-Then run:
-
-```console
-./run.sh reset-airbyte
-```
-
-Enter `y` for yes at the prompt to confirm that you want to reset the container.
-
-This command will stop and remove the container.
-
 ### Additional commands
 
 You can see a full list of available commands by running:
@@ -338,6 +308,6 @@ You can see a full list of available commands by running:
 ./run.sh help
 ```
 
-Some seldom needed [additional commands](./Docs/additional-commands.md) are available.
+Some seldom-needed [additional commands](./Docs/additional-commands.md) are available.
 
 In some rare circumstances, it may be helpful to [run individual data transformation jobs](./Docs/direct-launchers.md).
