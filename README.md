@@ -245,6 +245,14 @@ The second of those messages mentions the steps outlined in the next section.
 
 ## Additional Information
 
+### Start and setup script
+
+You can run the both the setup and migration scripts at once with the following command:
+
+```console
+./run.sh go
+```
+
 ### Cleaning migrated data
 
 > [!WARNING]
