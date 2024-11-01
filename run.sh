@@ -413,6 +413,8 @@ Help() {
   echo -e "  Collect the Zephyr and Xray configuration\n"
   echo -e "* configure-attachments"
   echo -e "  Set the attachments path for both Zephyr and Xray\n"
+  echo -e "* retrieve"
+  echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
   echo -e "  Migrate the projects\n"
   echo -e "* migrate-attachments"
