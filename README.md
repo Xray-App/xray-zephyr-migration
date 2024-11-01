@@ -186,7 +186,7 @@ Once done, you should see the message `Excellent, your Xray Zephyr Docker is now
 
 Next, check the [Xray config](./config/xray/xray-config.yml) and [Zephyr Scale config](./config/zephyr/zephyr-config.yml) files for the updated settings. You can modify these files directly to make any needed changes.
 
-For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr Scale](./Docs/zepyr-configuration.md) configuration documentation.
+For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr Scale](./Docs/zephyr-configuration.md) configuration documentation.
 
 ### Migration (Extract-Load)
 
