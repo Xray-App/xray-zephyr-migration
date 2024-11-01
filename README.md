@@ -1,18 +1,41 @@
 # Zephyr → Xray Migration
 
-This repository contains configuration files and scripts to migrate data from [Zephyr]() to [Xray](). The migration occurs at the database level, data are retrieved via the Jira and Zephyr APIs and written directly into the Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr to Xray.
+This repository contains configuration files and scripts to migrate data from [SmartBear Zephyr](https://smartbear.com/test-management/zephyr-scale/) to [Xray Test Management](https://www.getxray.app/). The migration occurs at the database level, retrieving data via the Jira and Zephyr APIs and writing directly into the Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr to Xray.
 
 The migration copies the specified Zephyr projects from a Jira instance to the same or different Jira instance.
 
 ```mermaid
+---
+title: Data Migration from Zephyr to Xray
+---
+block-beta
+columns 5
+
+space:4
+block:migd["Docker\n\n\n"]
+    columns 1
+    space
+    migrate["Migration Scripts"]
+end
+space:5
+zdb[("\nZephyr DB")]:1
+space
+block:apd[("Docker\n\n\n")]
+    columns 1
+    space
+    ap["Jira & Zephyr APIs"]
+end
+space
+xdb[("\nXray DB")]:1
+zdb -- "Extract" --> ap
+ap -- "Load" --> xdb
+migrate --> xdb
+xdb -- "Transform" --> migrate
 ```
 
 ## Migration Requirements & Pre-requisites
 
-> [!IMPORTANT]
-> The TestRail instance that is the target of the data migration must use MySQL 8.x, not 5.x as the database.
-
-1. The TestRail Server instance that is the target of the migration must be already setup and running.
+1. The Jira instances that are the source and the target of the migration must be already setup and running.
 1. macOS or Linux are recommended for the computer running the migration. The migration automation bash scripts in this repository configure and execute the Docker-based migration tooling, and require a [Unix-like](https://en.wikipedia.org/wiki/Unix-like) operating system that is capable of running bash scripts.
 
 > [!TIP]
@@ -22,28 +45,19 @@ The migration copies the specified Zephyr projects from a Jira instance to the s
 1. Install [Docker](https://docs.docker.com/get-docker/) and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
 1. Allocate at least 16 gigabytes (GB) of RAM for running the Docker containers. The Docker default is 50% of the computer's RAM, so the default is sufficient on a computer with 32GB+ of RAM. You can adjust the amount of memory allocated to Docker from the [Docker Desktop settings](https://docs.docker.com/desktop/settings/mac/#advanced).
 
-> [!IMPORTANT]
-> The ALM Octane instance that is the source of the data migration must use SQL Server, not Oracle, as the database.
-
-6. Verify that the computer running the migration has access to the MS SQL Server database of the ALM Octane instance that is the source of the migration. You will need:
-  - the ALM Octane database host
-  - the [Microsoft SQL Server](https://www.microsoft.com/sql-server) port (e.g. `1433`)
-  - the name of the ALM Octane database (e.g. `default_shared_space`)
-  - the ALM Octane database username (e.g. `sa`)
-  - the password for the ALM Octane database user
-7. Verify that the computer running the migration has access to the MySQL database of the TestRail instance that is the target of the migration. You will need:
-  - the TestRail database host
-  - the [MySQL](https://www.mysql.com/) port (e.g. `3306`)
-  - the name of the TestRail database (e.g. `testrail`)
-  - the TestRail database root username (e.g. `root`)
-  - the password for the root TestRail database user 
-8. Verify that the computer running the migration has access to the [Cassandra](https://cassandra.apache.org/_/index.html) database of the TestRail instance that is the target of the migration.
-  - one or more Cassandra database hosts
-  - the Cassandra port (e.g. `9042`)
-  - the name of the keyspace used by TestRail (e.g. `tr_keyspace`)
-  - a Cassandra database username (e.g. `cassandra`)
-  - the password for the Cassandra database user
-9. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
+6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the source of the migration. You will need:
+  - the Jira database host
+  - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
+  - the name of the Jira database (e.g. `jiradb`)
+  - the Jira database username (e.g. `jira_user`)
+  - the password for the Jira database user
+7. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
+  - the Jira database host
+  - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
+  - the name of the Jira database (e.g. `jiradb`)
+  - the Jira database username (e.g. `jira_user`)
+  - the password for the Jira database user
+8. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
 
 ### Attachment requirements
 
@@ -54,12 +68,12 @@ title: Attachment File Migration from ALM Octane to TestRail
 block-beta
 columns 5
 
-odb[("\nALM Octane DB")]:1
+zdb[("\nZephyr DB")]:1
 space:3
-trdb[("\nTestRail DB")]:1
+xdb[("\nXray DB")]:1
 space:5
 
-os["ALM Octane\nAttachment Storage\nDirectory"]
+zs["Zephyr\nAttachment Storage\nDirectory"]
 space:1
 block:migd["Docker\n\n\n"]
     columns 1
@@ -67,35 +81,33 @@ block:migd["Docker\n\n\n"]
     migrate["Migration Scripts"]
 end
 space:1
-trs["TestRail\nAttachment Storage\nDirectory"]
+xs["Xray\nAttachment Storage\nDirectory"]
 
-odb -- "Attachment\nfile references" --> os
-trdb -- "Attachment\nfile references" --> trs
+zdb -- "Attachment\nfile references" --> zs
+xdb -- "Attachment\nfile references" --> xs
 
-odb -- "Attachment data" --> migrate
-migrate -- "Attachment data" --> trdb
+zdb -- "Attachment data" --> migrate
+migrate -- "Attachment data" --> xdb
 
-os -- "Copy from" --> migrate
-migrate -- "Copy to" --> trs
+zs -- "Copy from" --> migrate
+migrate -- "Copy to" --> xs
 ```
 
-You will need to provide two paths to attachment file storage locations, one for ALM Octane, where the current Octane attachment files are located, and one for TestRail, where the attachment files will be copied during the migration.
+You will need to provide the path to the Xray attachment file storage locations, where attachment files will be copied during the migration.
 
-The ALM Octane attachment file storage location can be a mounted volume, or just a local copy of the Octane attachment storage.
-
-During the migration process, the ALM Octane attachment files will be copied to the TestRail attachment storage location. If the TestRail attachment storage location is a mounted volume, then the attachment copy is complete after the migration. If not, the attachment directory can be copied to the TestRail instance attachment storage after the migration.
+During the migration process, the Zephyr attachment files will be copied to the Xray attachment storage location.
 
 ## Migration Usage
 
 ### Docker and GitHub repository preparation
 
-1. Clone [this GitHub repository](https://github.com/gurock/tr-octane-migration) if you haven't already, with this command:
+1. Clone [this GitHub repository](https://github.com/StoatLabs/xray-zephyr-migration) if you haven't already, with this command:
 
 ```console
-git clone git@github.com:gurock/tr-octane-migration
+git clone git@github.com:StoatLabs/xray-zephyr-migration
 ```
 
-2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `TestRail migration`, an expiration, and the following scope:
+2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `Xray migration`, an expiration, and the following scope:
   - `read:packages`
 
 3. Click the green "Generate token" button.
@@ -108,14 +120,14 @@ export GHCR_USER=<insert GitHub username here>
 echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin
 ```
 
-6. Look for the `Login Succeeded` message. Now that you are logged in, you'll be able to pull the `tr-data-migration` image from GHCR, by following the steps in the next section.
+6. Look for the `Login Succeeded` message. Now that you are logged in, you'll be able to pull the `xray-zephyr-migration` image from GHCR, by following the steps in the next section.
 
 ### Container setup
 
 1. Start the Docker container download and setup with the following commands:
 
 ```console
-cd tr-octane-migration
+cd xray-zephyr-migration
 ./run.sh start
 ```
 
