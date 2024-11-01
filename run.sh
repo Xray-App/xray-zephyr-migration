@@ -24,66 +24,45 @@ DOCKER_TEMP_CONTAINER_NAME=$DOCKER_CONTAINER_NAME-temp
 DOCKER_IMAGE_TAG=ghcr.io/$GH_ACTOR/$DOCKER_IMAGE_NAME
 DOCKER_IMAGE=$DOCKER_IMAGE_TAG:$VERSION
 # Attachments
-# OCTANE_ATTACHMENTS_FILE=./config/octane/attachments_path.txt
-# TESTRAIL_ATTACHMENTS_FILE=./config/testrail/attachments_path.txt
+XRAY_ATTACHMENTS_FILE=./config/xray/attachments_path.txt
 # Xray and Zephyr Configuration
 XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
 
 # Attachments paths
 
-# # Collect the Octane attachments path from the user, default is ~/octane/repo/storage
-# # save it in OCTANE_ATTACHMENTS_FILE
-# CollectOctaneAttachmentsPath() {
-#   # Ask the user for the path, check if it actually exists, if not repeat
-#   while true; do
-#     read -p "Enter the path to the Octane attachments (default is ~/octane/repo/storage): " octane_attachments_path
-#     if [ -z "$octane_attachments_path" ]; then
-#       octane_attachments_path="~/octane/repo/storage"
-#     fi
-#     octane_attachments_path=$(eval echo "$octane_attachments_path")
-#     if [ -d "$octane_attachments_path" ]; then
-#       break
-#     else
-#       echo "The path to the Octane attachments does not exist, please try again..."
-#     fi
-#   done
-#   echo $octane_attachments_path > $OCTANE_ATTACHMENTS_FILE
-# }
+# Collect the Xray attachments path from the user, default is $PWD/attachments_storage
+# save it in XRAY_ATTACHMENTS_FILE
+CollectXrayAttachmentsPath() {
+  # Ask the user for the path, check if it actually exists, if not repeat
+  while true; do
+    read -p "Enter the path to the TestRail attachments (default is $PWD/attachments_storage): " xray_attachments_path
+    if [ -z "$xray_attachments_path" ]; then
+      xray_attachments_path="$PWD/attachments_storage"
+    fi
+    xray_attachments_path=$(eval echo "$xray_attachments_path")
+    if [ -d "$xray_attachments_path" ]; then
+      break
+    else
+      read -p "The path to the Xray attachments does not exist, would you like to create it? (y/n)" -n 1 -r
+      echo # Move to a new line
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Aborting..."
+        exit 1
+      fi
+      mkdir -p $xray_attachments_path
+      break
+    fi
+  done
+  echo $xray_attachments_path > $XRAY_ATTACHMENTS_FILE
+}
 
-# # Collect the Octane attachments path if doesn't exists yet
-# MaybeCollectOctaneAttachmentsPath() {
-#   force_collect_attachments=$1
-#   if [ ! -f $OCTANE_ATTACHMENTS_FILE ] || [ $force_collect_attachments -eq 1 ]; then
-#     CollectOctaneAttachmentsPath
-#   fi
-# }
-
-# # Collect the TestRail attachments path from the user, default is ~/testrail/_opt/attachments
-# # save it in TESTRAIL_ATTACHMENTS_FILE
-# CollectTestRailAttachmentsPath() {
-#   # Ask the user for the path, check if it actually exists, if not repeat
-#   while true; do
-#     read -p "Enter the path to the TestRail attachments (default is ~/testrail/_opt/attachments): " testrail_attachments_path
-#     if [ -z "$testrail_attachments_path" ]; then
-#       testrail_attachments_path="~/testrail/_opt/attachments"
-#     fi
-#     testrail_attachments_path=$(eval echo "$testrail_attachments_path")
-#     if [ -d "$testrail_attachments_path" ]; then
-#       break
-#     else
-#       echo "The path to the TestRail attachments does not exist, please try again..."
-#     fi
-#   done
-#   echo $testrail_attachments_path > $TESTRAIL_ATTACHMENTS_FILE
-# }
-
-# # Collect the TestRail attachments path if doesn't exists yet
-# MaybeCollectTestRailAttachmentsPath() {
-#   force_collect_attachments=$1
-#   if [ ! -f $TESTRAIL_ATTACHMENTS_FILE ] || [ $force_collect_attachments -eq 1 ]; then
-#     CollectTestRailAttachmentsPath
-#   fi
-# }
+# Collect the Xray attachments path if doesn't exists yet
+MaybeCollectXrayAttachmentsPath() {
+  force_collect_attachments=$1
+  if [ ! -f $XRAY_ATTACHMENTS_FILE ] || [ $force_collect_attachments -eq 1 ]; then
+    CollectXrayAttachmentsPath
+  fi
+}
 
 # Docker iamge and container handing
 
@@ -119,6 +98,10 @@ CreateImage() {
       echo "Copying /app/reports"
       docker cp $DOCKER_TEMP_CONTAINER_NAME:/app/reports ./
     fi
+    if [ ! -d "./source_attachments" ]; then
+      echo "Creating ./source_attachments folder if not exists"
+      mkdir -p ./source_attachments
+    fi
     # Stop the container
     echo "Stopping the temporary container..."
     docker stop $DOCKER_TEMP_CONTAINER_NAME
@@ -134,19 +117,17 @@ CreateContainer() {
   docker ps -a | grep $DOCKER_CONTAINER_NAME > /dev/null 2>&1
   if [ $? -ne 0 ]; then
       echo "Creating the container with the mounted volumes..."
-      # MaybeCollectOctaneAttachmentsPath $force_collect_attachments
-      # MaybeCollectTestRailAttachmentsPath $force_collect_attachments
-      # octane_attachments_path=$(cat $OCTANE_ATTACHMENTS_FILE)
-      # testrail_attachments_path=$(cat $TESTRAIL_ATTACHMENTS_FILE)
-      # echo "Now starting the container with Octane path $octane_attachments_path and TestRail path $testrail_attachments_path..."
+      MaybeCollectXrayAttachmentsPath $force_collect_attachments
+      xray_attachments_path=$(cat $XRAY_ATTACHMENTS_FILE)
+      echo "Now starting the container with Xray path $xray_attachments_path..."
       docker create -it --name $DOCKER_CONTAINER_NAME \
         -v $(pwd)/config/xray:/app/config/xray/ \
         -v $(pwd)/config/zephyr:/app/config/zephyr/ \
         -v $(pwd)/logs:/app/logs/ \
         -v $(pwd)/reports:/app/reports/ \
+        -v $(eval echo $xray_attachments_path):/app/attachments_storage \
+        -v $(eval echo $PWD/source_attachments):/app/source_attachments \
         $DOCKER_IMAGE
-        # -v $(eval echo $octane_attachments_path):/app/octane/storage \
-        # -v $(eval echo $testrail_attachments_path):/app/testrail/attachments \
   fi
 }
 
@@ -241,7 +222,7 @@ Configure() {
   fi
   # configure the container
   docker exec -it -e FILE_LOG_LEVEL=OFF $DOCKER_CONTAINER_NAME bin/collect-info zephyr
-  CopySSHKeys
+  MaybeCopySSHKeys
   # Touch $XRAY_ZEPHYR_MIGRATION_CONFIGURED unless previous command failed
   if [ $? -ne 0 ]; then
     echo "Failed to configure Xray Zephyr Docker, please try again."
@@ -320,10 +301,18 @@ CanGo() {
 
 # SSH
 
-CopySSHKeys() {
-  keys_line=$(cat ./config/xray/xray-config.yml | grep "  keys:")
-  keys=$(echo "$keys_line" | grep -o '"[^"]*"' | tr -d '"' | sed "s|~|$HOME|g")
+MaybeCopySSHKeys() {
+  keys_line=$(cat ./config/xray/xray-config.yml | grep "^\s*keys:")
+  # Get the keys values only if keys_line is not empty
+  if [ -n "$keys_line" ]; then
+    keys=$(echo "$keys_line" | grep -o '"[^"]*"' | tr -d '"' | sed "s|~|$HOME|g")
 
+    CopySSHKeys $keys
+  fi
+}
+
+CopySSHKeys() {
+  keys=$1
   docker exec $DOCKER_CONTAINER_NAME mkdir -p /root/.ssh
   docker exec $DOCKER_CONTAINER_NAME chmod 700 /root/.ssh
 
@@ -460,7 +449,7 @@ Run() {
   elif [ "$1" == "help" ]; then
     Help
   elif [ "$1" == "copy-ssh-keys" ]; then
-    CopySSHKeys
+    MaybeCopySSHKeys
   else
     echo "Unknown command: $1"
   fi
