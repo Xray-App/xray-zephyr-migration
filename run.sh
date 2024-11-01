@@ -17,7 +17,7 @@ EOF
 }
 # Docker image
 VERSION=latest
-GH_ACTOR=stoatlabs
+GH_ACTOR=xray-app
 DOCKER_IMAGE_NAME=xray-data-migration
 DOCKER_CONTAINER_NAME=xray-zephyr-migration
 DOCKER_TEMP_CONTAINER_NAME=$DOCKER_CONTAINER_NAME-temp

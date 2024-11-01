@@ -89,10 +89,10 @@ During the migration process, the ALM Octane attachment files will be copied to 
 
 ### Docker and GitHub repository preparation
 
-1. Clone [this GitHub repository](https://github.com/gurock/tr-octane-migration) if you haven't already, with this command:
+1. Clone [this GitHub repository](https://github.com/Xray-App/xray-zephyr-migration) if you haven't already, with this command:
 
 ```console
-git clone git@github.com:gurock/tr-octane-migration
+git clone git@github.com:xray-app/xray-zephyr-migration
 ```
 
 2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `TestRail migration`, an expiration, and the following scope:
