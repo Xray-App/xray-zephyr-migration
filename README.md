@@ -317,5 +317,3 @@ You can see a full list of available commands by running:
 ```
 
 Some seldom-needed [additional commands](./Docs/additional-commands.md) are available.
-
-In some rare circumstances, it may be helpful to [run individual data transformation jobs](./Docs/direct-launchers.md).
