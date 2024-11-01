@@ -1,8 +1,8 @@
 # Zephyr → Xray Migration
 
-This repository contains configuration files and scripts to migrate data from [SmartBear Zephyr](https://smartbear.com/test-management/zephyr-scale/) to [Xray Test Management](https://www.getxray.app/). The migration occurs at the database level, retrieving data via the Jira and Zephyr APIs and writing directly into the Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr to Xray.
+This repository contains configuration files and scripts to migrate data from SmartBear's [Zephyr Scale](https://smartbear.com/test-management/zephyr-scale/) to [Xray](https://www.getxray.app/). The migration retrieves data via the Jira and Zephyr APIs, then writes directly to the Jira and Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr Scale to Xray.
 
-The migration copies the specified Zephyr projects from a Jira instance to the same or different Jira instance.
+The migration copies the specified Zephyr Scale projects from a Jira instance to Xray projects on either the same or a different Jira instance.
 
 ```mermaid
 ---
