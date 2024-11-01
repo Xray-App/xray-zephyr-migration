@@ -9,33 +9,46 @@ The migration copies the specified Zephyr Scale projects from a Jira instance to
 title: Data Migration from Zephyr to Xray
 ---
 block-beta
-columns 5
-
-space:4
+columns 6
+%% First row
+zdb[("\nZephyr DB")]:1
+zjdb[("\nJira DB")]:1
+space:2
 block:migd["Docker\n\n\n"]
     columns 1
     space
     migrate["Migration Scripts"]
 end
-space:5
-zdb[("\nZephyr DB")]:1
+space
+%% Second row
+space:6
+%% Third row
+zapi["Zephyr API"]:1
 space
 block:apd[("Docker\n\n\n")]
     columns 1
     space
-    ap["Jira & Zephyr APIs"]
+    ap["Extraction Scripts"]
 end
 space
 xdb[("\nXray DB")]:1
-zdb -- "Extract" --> ap
+space
+%% Fourth row
+space:5
+xjdb[("\nJira DB")]:1
+zapi --> zdb
+zapi --> zjdb
+zapi -- "Extract" --> ap
 ap -- "Load" --> xdb
+ap -- "Load" --> xjdb
 migrate --> xdb
 xdb -- "Transform" --> migrate
+xjdb -- "Transform" --> migrate
 ```
 
 ## Migration Requirements & Pre-requisites
 
-1. The Jira instances that are the source and the target of the migration must be already setup and running.
+1. The Jira instance(s) that are the source and the target of the migration must be already setup and running.
 1. macOS or Linux are recommended for the computer running the migration. The migration automation bash scripts in this repository configure and execute the Docker-based migration tooling, and require a [Unix-like](https://en.wikipedia.org/wiki/Unix-like) operating system that is capable of running bash scripts.
 
 > [!TIP]
@@ -45,19 +58,13 @@ xdb -- "Transform" --> migrate
 1. Install [Docker](https://docs.docker.com/get-docker/) and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
 1. Allocate at least 16 gigabytes (GB) of RAM for running the Docker containers. The Docker default is 50% of the computer's RAM, so the default is sufficient on a computer with 32GB+ of RAM. You can adjust the amount of memory allocated to Docker from the [Docker Desktop settings](https://docs.docker.com/desktop/settings/mac/#advanced).
 
-6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the source of the migration. You will need:
+6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
   - the Jira database host
   - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
   - the name of the Jira database (e.g. `jiradb`)
   - the Jira database username (e.g. `jira_user`)
   - the password for the Jira database user
-7. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
-  - the Jira database host
-  - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
-  - the name of the Jira database (e.g. `jiradb`)
-  - the Jira database username (e.g. `jira_user`)
-  - the password for the Jira database user
-8. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
+7. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
 
 ### Attachment requirements
 
@@ -67,14 +74,15 @@ title: Attachment File Migration from Zephyr to Xray
 ---
 block-beta
 columns 5
-
-zdb[("\nZephyr DB")]:1
-space:3
+%% First row
+space:4
 xdb[("\nXray DB")]:1
+%% Second row
 space:5
+%% Third row
+zapi["Zephyr API"]:1
+space
 
-zs["Zephyr\nAttachment Storage\nDirectory"]
-space:1
 block:migd["Docker\n\n\n"]
     columns 1
     space
@@ -83,17 +91,15 @@ end
 space:1
 xs["Xray\nAttachment Storage\nDirectory"]
 
-zdb -- "Attachment\nfile references" --> zs
 xdb -- "Attachment\nfile references" --> xs
 
-zdb -- "Attachment data" --> migrate
 migrate -- "Attachment data" --> xdb
 
-zs -- "Copy from" --> migrate
+zapi -- "Attachment data\nCopy from" --> migrate
 migrate -- "Copy to" --> xs
 ```
 
-You will need to provide the path to the Xray attachment file storage locations, where attachment files will be copied during the migration.
+You will need to provide the path to the Xray attachment file storage location, where attachment files will be copied during the migration.
 
 During the migration process, the Zephyr attachment files will be copied to the Xray attachment storage location.
 
@@ -105,6 +111,7 @@ During the migration process, the Zephyr attachment files will be copied to the 
 
 ```console
 git clone git@github.com:xray-app/xray-zephyr-migration
+```
 
 2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `Xray migration`, an expiration, and the following scope:
   - `read:packages`
@@ -154,7 +161,7 @@ Run the following command to configure settings for Zephyr and Xray:
 ```
 
 > [!TIP]
-> Note: you can edit the Zephyr configuration directly by editing the `conn:` key of './config/zephyr/zephyr-config.yml'
+> Note: you can edit the Zephyr configuration directly by editing the `conn:` key of `./config/zephyr/zephyr-config.yml`
 
 Follow the steps below at each prompt to complete the configuration:
 
@@ -191,21 +198,6 @@ For an in-depth explanation of the settings within the configuration files, refe
 
 Enter 'retrieve' at the prompt to confirm that you're ready to create the project tables.
 
-You should see the following tables created in Xray:
-- rest_projects
-- rest_testcases
-- rest_testcycles
-- rest_testruns
-- rest_testplans
-- rest_testcase_attachments
-- rest_testcase_customfields
-- rest_testplan_attachments
-- rest_testplan_customfields
-- rest_testcycle_attachments
-- rest_testcycle_customfields
-- rest_testrun_attachments
-- rest_testcase_comments
-
 Once you see the messages `Zephyr test cycle additional attachments retrieval script completed.` and `Zephyr retrieval complete!`, the retrieval process is complete.
 
 1. Run the following command to start the migration:
@@ -216,7 +208,7 @@ Once you see the messages `Zephyr test cycle additional attachments retrieval sc
 
 Enter 'migrate' at the prompt to confirm that you're ready to migrate the data.
 
-This script will extract data from the Zephyr database and load it into the Xray database.
+This script will read the data extracted from Zephyr Scale, transform it into Xray data, and save it to the Xray database.
 
 You should see the following messages when the migration is complete:
 - `Zephyr migration complete!`
@@ -281,21 +273,21 @@ You can run the both the setup and migration scripts at once with the following 
 2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr tables from the Xray database.
 1. Once confirmed, the script will remove the Zephyr tables from the Xray database.
 
-### Stopping the Docker containers
+### Stopping the Docker container
 
-When you have completed the migration, you will want to stop the migration's Docker containers.
+When you have completed the migration, you will want to stop the migration's Docker container.
 
-To bring down the Docker containers, run the following command:
+To bring down the Docker container, run the following command:
 
 ```console
 ./run.sh stop
 ```
 
-This will not remove the containers or their data.
+This will not remove the container or its data.
 
-### Removing the Docker containers
+### Removing the Docker container
 
-To remove the Docker containers and reset to the initial state, run the following:
+To remove the Docker container and reset to its initial state, run the following:
 
 ```console
 ./run.sh reset
@@ -307,6 +299,7 @@ This command will stop and remove the container, and remove the following direct
 - `/config`
 - `/logs`
 - `/reports`
+- `/source_attachments`
 
 ### Additional commands
 
