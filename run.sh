@@ -335,10 +335,10 @@ CopySSHKeys() {
 
 # Migration handling
 
-Retrieve() {
-  Welcome "Retrieving Xray Data Migration..."
+Extract() {
+  Welcome "Extracting Xray Data Migration..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/retrieve_projects
+  docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
 Migrate() {
@@ -363,7 +363,7 @@ CleanMigration() {
 }
 
 CleanRest() {
-  Welcome "Cleaning retrieved tables..."
+  Welcome "Cleaning extracted tables..."
   docker exec -it $DOCKER_CONTAINER_NAME util/clean_rest_tables
 }
 
@@ -381,7 +381,7 @@ Go() {
   if [ $configured -ne 1 ]; then
     Configure
   fi
-  echo "Xray Data Migration setup complete! Now you can retrieve the data with './run.sh retrieve' and then migrate them with './run.sh migrate'. See './run.sh help' for more information."
+  echo "Xray Data Migration setup complete! Now you can extract the data with './run.sh extract' and then migrate them with './run.sh migrate'. See './run.sh help' for more information."
 }
 
 # Help
@@ -400,7 +400,7 @@ Help() {
   echo -e "  Show the status of the xray-zephyr-migration container\n"
   echo -e "* configure"
   echo -e "  Collect the Zephyr and Xray configuration\n"
-  echo -e "* retrieve"
+  echo -e "* extract"
   echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
   echo -e "  Migrate the projects\n"
@@ -409,7 +409,7 @@ Help() {
   echo -e "* clean"
   echo -e "  Clean the migration\n"
   echo -e "* clean-rest"
-  echo -e "  Clean retrieved tables\n"
+  echo -e "  Clean extracted tables\n"
   echo -e "* reset"
   echo -e "  Reset the Xray Data Migration\n"
 }
@@ -432,8 +432,8 @@ Run() {
     ConfigureAttachmentsPaths
   elif [ "$1" == "status" ]; then
     Status
-  elif [ "$1" == "retrieve" ]; then
-    Retrieve
+  elif [ "$1" == "extract" ]; then
+    Extract
   elif [ "$1" == "migrate" ]; then
     Migrate
   elif [ "$1" == "report" ]; then

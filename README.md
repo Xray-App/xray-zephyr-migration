@@ -193,12 +193,12 @@ For an in-depth explanation of the settings within the configuration files, refe
 1. Run the following command to create the project tables necessary for the migration to Xray:
 
 ```console
-./run.sh retrieve
+./run.sh extract
 ```
 
-Enter 'retrieve' at the prompt to confirm that you're ready to create the project tables.
+Enter 'extract' at the prompt to confirm that you're ready to create the project tables.
 
-Once you see the messages `Zephyr test cycle additional attachments retrieval script completed.` and `Zephyr retrieval complete!`, the retrieval process is complete.
+Once you see the messages `Zephyr test cycle additional attachments extraction script completed.` and `Zephyr extraction complete!`, the extraction process is complete.
 
 1. Run the following command to start the migration:
 
@@ -259,10 +259,10 @@ You can run the both the setup and migration scripts at once with the following 
 2. Enter `clean` at the prompt to confirm that you're ready to remove the migrated data from Xray.
 1. Once confirmed, the script will remove the migrated data from the Xray database. No data that already existed in Xray separately from the migration will be removed.
 
-### Cleaning retrieved data
+### Cleaning extracted data
 
 > [!CAUTION]
-> Cleaning retrieved data means removing all the data that was extracted from Zephyr Scale and loaded into the Xray database. This data contains a ledger record of the resulting transformation and migration of the data into the Xray tables. If you remove the retrieved data you will no longer be able to use this ledger record to clean the migrated data from Xray in a migration "rollback".
+> Cleaning extracted data means removing all the data that was extracted from Zephyr Scale and loaded into the Xray database. This data contains a ledger record of the resulting transformation and migration of the data into the Xray tables. If you remove the extracted data you will no longer be able to use this ledger record to clean the migrated data from Xray in a migration "rollback".
 
 1. Once you've cleaned the migrated data from Xray, you may want to remove the Zephyr Scale tables that were created during the extraction process. To do this, run the following command:
 
