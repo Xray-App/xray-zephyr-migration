@@ -2,7 +2,7 @@
 
 # Welcome function, get a msg as parameter and print it in ascii art
 Welcome() {
-  # Echo TR Data Migration in ascii art
+  # Echo Xray Migration ASCII art
   cat <<'EOF'
 
 ____  ___                    
@@ -35,7 +35,7 @@ XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
 CollectXrayAttachmentsPath() {
   # Ask the user for the path, check if it actually exists, if not repeat
   while true; do
-    read -p "Enter the path to the Xray attachments (default is $PWD/attachments_storage): " xray_attachments_path
+    read -p "Enter the path to the Xray attachments storage location (default is $PWD/attachments_storage): " xray_attachments_path
     if [ -z "$xray_attachments_path" ]; then
       xray_attachments_path="$PWD/attachments_storage"
     fi
@@ -342,7 +342,7 @@ Extract() {
 }
 
 Migrate() {
-  Welcome "Migrating TR Data Migration..."
+  Welcome "Migrating data..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }
@@ -358,7 +358,7 @@ Report() {
 # Clean
 
 CleanMigration() {
-  Welcome "Cleaning TR Data Migration..."
+  Welcome "Cleaning migrated data..."
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/clean_migration
 }
 
