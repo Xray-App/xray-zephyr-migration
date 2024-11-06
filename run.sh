@@ -16,6 +16,7 @@ Zephyr Scale to Xray Migration
 
 EOF
   echo $1
+  echo ""
   sleep 1
 }
 # Docker image
@@ -360,13 +361,13 @@ CopySSHKeys() {
 # Migration handling
 
 Extract() {
-  Welcome "Extracting Zephyr Scale projects..."
+  Welcome "Extracting the Zephyr Scale projects..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
 Migrate() {
-  Welcome "Migrating Zephyr Scale projects to Xray..."
+  Welcome "Migrating the Zephyr Scale projects to Xray..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }

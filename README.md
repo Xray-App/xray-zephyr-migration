@@ -167,19 +167,19 @@ Follow the steps below at each prompt to complete the configuration:
 
 _Zephyr_
 
-1. Enter the keys of the Zephyr Scale projects to migrate, separated by commas (e.g. `PROJ-123,PROJ-456`).
-1. Enter the domain of the Zephyr Scale server, including the port if necessary (e.g. `https://your-zephyr-domain.com:8443`).
-1. Enter the username to connect to the Zephyr Scale server with. Leave this blank if you are using a bearer token for authentication.
-1. Enter the password for the Zephyr Scale server user. Leave this blank if you are using a bearer token for authentication.
-1. Optionally enter the Zephyr Scale bearer token to use for authentication, or press enter.
+1. Enter the keys of the Zephyr Scale projects to migrate, separated by commas (e.g. `PROJ123,PROJ456`).
+1. Enter the domain of the Zephyr Scale server hosting the API, including the port if necessary (e.g. `https://your-zephyr-domain.com:8443`).
+1. Enter the Jira user name to use for the Zephyr Scale API. Leave this blank if you are using a bearer token for authentication.
+1. Enter the Jira user password to use for the Zephyr Scale API user. Leave this blank if you are using a bearer token for authentication.
+1. Optionally enter the Zephyr Scale bearer token to use for API authentication, or just press enter if you are using user/password.
 
 _Xray_
 
-1. Enter the Xray database host URL (e.g. `https://your-xray-domain.com`).
+1. Enter the Xray database host URL (e.g. `localhost` or `your-xray-domain.com`).
 1. Enter the Xray postgres database port (e.g. `5432`).
-1. Enter the name of the Xray database (`jiradb` by default).
-1. Enter the username to connect to the Jira server with (`jirauser` by default).
-1. Enter the password for the Jira server user.
+1. Enter the name of the Jira/Xray database (`jiradb` by default).
+1. Enter the database user name to connect to the Jira/Xray database (`jirauser` by default).
+1. Enter the database user password for the Jira/Xray database.
 1. Enter the path to write the attachment files to (e.g. `/var/atlassian/application-data/jira/data/attachments/`)
 
 Once done, you should see the message `Excellent, your Xray Zephyr Docker is now configured!`.
