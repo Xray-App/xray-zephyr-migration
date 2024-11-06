@@ -267,7 +267,7 @@ You can run the both the setup and migration scripts at once with the following 
 1. Once you've cleaned the migrated data from Xray, you may want to remove the Zephyr Scale tables that were created during the extraction process. To do this, run the following command:
 
 ```console
-./run.sh clean-rest
+./run.sh clean-extracted-data
 ```
 
 2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr Scale tables from the Xray database.

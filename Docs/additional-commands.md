@@ -36,7 +36,7 @@ The output of which is as follows:
 * clean
   Clean the migration
 
-* clean-rest
+* clean-extracted-data
   Clean extracted tables
 
 * reset
