@@ -35,7 +35,7 @@ XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
 CollectXrayAttachmentsPath() {
   # Ask the user for the path, check if it actually exists, if not repeat
   while true; do
-    read -p "Enter the path to the TestRail attachments (default is $PWD/attachments_storage): " xray_attachments_path
+    read -p "Enter the path to the Xray attachments (default is $PWD/attachments_storage): " xray_attachments_path
     if [ -z "$xray_attachments_path" ]; then
       xray_attachments_path="$PWD/attachments_storage"
     fi
