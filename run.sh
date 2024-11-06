@@ -11,6 +11,9 @@ ____  ___
  /     \ |  | \// __ \\___  |
 /___/\  \|__|  (____  / ____|
       \_/           \/\/     
+
+Zephyr Scale to Xray Migration
+
 EOF
   echo $1
   sleep 1
@@ -33,7 +36,8 @@ XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
 
 AskForAttachmentsMethod() {
   echo # Move to a new line
-  read -p "Would you like to use SFTP to migrate attachments directly to the Jira instance machine? (y/n) " -n 1 -r
+  echo "You can choose to copy migrated attachments remotely to the target Jira/Xray instance using SFTP, or you can just copy them locally if this migration is running on the target Jira/Xray instance, or if you have a network mount available."
+  read -p "Will you be using SFTP to copy migrated attachments remotely to the target Jira/Xray instance machine? (y/n) " -n 1 -r
   echo # Move to a new line
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo 'local' > $ATTACHMENTS_METHOD_FILE
@@ -111,7 +115,7 @@ CreateImage() {
       docker cp $DOCKER_TEMP_CONTAINER_NAME:/app/reports ./
     fi
     if [ ! -d "./source_attachments" ]; then
-      echo "Creating ./source_attachments folder if not exists"
+      echo "Creating ./source_attachments folder if it does not exist"
       mkdir -p ./source_attachments
     fi
     # Stop the container
@@ -137,7 +141,7 @@ CreateContainer() {
       else
         xray_attachments_path="$PWD/source_attachments"
       fi
-      echo "Now starting the container with Xray path $xray_attachments_path..."
+      echo "Now starting the container with the Xray attachments path $xray_attachments_path..."
       docker create -it --name $DOCKER_CONTAINER_NAME \
         -v $(pwd)/config/xray:/app/config/xray/ \
         -v $(pwd)/config/zephyr:/app/config/zephyr/ \
@@ -156,7 +160,7 @@ StartContainer() {
 }
 
 Start() {
-  Welcome "Starting Xray Zephyr Migration..."
+  Welcome "Starting the Zephyr Scale to Xray migration..."
   ## Zephyr docker
   CreateImage
   CreateContainer
@@ -169,7 +173,7 @@ StopContainer() {
 }
 
 Stop() {
-  Welcome "Stopping Xray Zephyr Migration..."
+  Welcome "Stopping the Zephyr Scale to Xray Migration..."
   StopContainer
 }
 
@@ -194,9 +198,9 @@ StopAndRemoveContainer() {
 }
 
 Reset() {
-  Welcome "Resetting Xray Zephyr Migration..."
+  Welcome "Resetting the Zephyr Scale to Xray migration..."
   # Prompt if the user is sure to reset, make sure they are going to delete the configs, logs and reports
-  read -p "Are you sure you want to reset the Xray Zephyr Migration? (y/n) " -n 1 -r
+  read -p "Are you sure you want to reset the migration? (y/n) " -n 1 -r
   echo    # (optional) move to a new line
   if [[ ! $REPLY =~ ^[Yy]$ ]]
   then
@@ -230,14 +234,14 @@ Configure() {
   ContainerDidStart
   containerStarted=$?
   if [ $containerStarted -ne 0 ]; then
-    echo "Xray Zephyr Docker is not running, please start it first with './run.sh start' and then try again."
+    echo "The Docker container is not running, please start it first with './run.sh start' and then try again."
     exit 1
   fi
   # return an error if container is already configured, check using DidConfigure
   DidConfigure
   configured=$?
   if [ $configured -eq 1 ]; then
-    echo "Xray Zephyr Docker is already configured, to re-configure it use './run.sh configure'."
+    echo "The Docker container is already configured, to re-configure it use './run.sh configure'."
     exit 1
   fi
   # configure the container
@@ -245,10 +249,10 @@ Configure() {
   MaybeCopySSHKeys
   # Touch $XRAY_ZEPHYR_MIGRATION_CONFIGURED unless previous command failed
   if [ $? -ne 0 ]; then
-    echo "Failed to configure Xray Zephyr Docker, please try again."
+    echo "Failed to configure the Docker container, please try again."
     exit 1
   else
-    echo "Excellent, your Xray Zephyr Docker is now configured!"
+    echo "Excellent, your Docker container is now configured!"
   fi
   touch $XRAY_ZEPHYR_MIGRATION_CONFIGURED
 }
@@ -259,7 +263,7 @@ ConfigureAttachmentsPaths() {
   ContainerDidStart
   containerStarted=$?
   if [ $containerStarted -ne 0 ]; then
-    echo "Xray Zephyr Docker is not running, please start it first with './run.sh start' and then try again."
+    echo "The Docker container is not running, please start it first with './run.sh start' and then try again."
     exit 1
   fi
   StopAndRemoveContainer
@@ -274,11 +278,11 @@ Status() {
   # Check if the docker image exists
   docker_ps=$(docker ps -a | grep $DOCKER_CONTAINER_NAME)
   if [ -z "$docker_ps" ]; then
-    echo "Xray Zephyr Docker: unknown"
+    echo "Migration Docker container: unknown"
   elif echo "$docker_ps" | grep -q "Exited"; then
-    echo "Xray Zephyr Docker: stopped"
+    echo "Migration Docker container: stopped"
   else
-    echo "Xray Zephyr Docker: running"
+    echo "Migration Docker container: running"
   fi
 }
 
@@ -306,7 +310,7 @@ CanGo() {
   ContainerDidStart
   containerStarted=$?
   if [ $containerStarted -ne 0 ]; then
-    echo "Xray Zephyr Docker didn't start yet, please start them first with './run.sh start' and then try again."
+    echo "The Docker container didn't start yet, please start it first with './run.sh start' and then try again."
     exit 1
   fi
 
@@ -314,7 +318,7 @@ CanGo() {
   DidConfigure
   configured=$?
   if [ $configured -ne 1 ]; then
-    echo "Xray Zephyr Docker is not configured, please configure it first with './run.sh configure' and then try again."
+    echo "The Docker container is not configured, please configure it first with './run.sh configure' and then try again."
     exit 1
   fi
 }
@@ -356,13 +360,13 @@ CopySSHKeys() {
 # Migration handling
 
 Extract() {
-  Welcome "Extracting Xray Data Migration..."
+  Welcome "Extracting Zephyr Scale projects..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
 Migrate() {
-  Welcome "Migrating data..."
+  Welcome "Migrating Zephyr Scale projects to Xray..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }
@@ -370,7 +374,7 @@ Migrate() {
 # Report
 
 Report() {
-  Welcome "Generating reconciliation report..."
+  Welcome "Generating the migration reconciliation report..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME util/run_report zephyr
 }
@@ -383,7 +387,7 @@ CleanMigration() {
 }
 
 CleanRest() {
-  Welcome "Cleaning extracted tables..."
+  Welcome "Cleaning extracted Zephyr Scale data..."
   docker exec -it $DOCKER_CONTAINER_NAME util/clean_rest_tables
 }
 
@@ -401,7 +405,7 @@ Go() {
   if [ $configured -ne 1 ]; then
     Configure
   fi
-  echo "Xray Data Migration setup complete! Now you can extract the data with './run.sh extract' and then migrate them with './run.sh migrate'. See './run.sh help' for more information."
+  echo "The Zephyr Scale to Xray migration setup is complete! Now you can extract the Zephyr Scale data with './run.sh extract' and then migrate it to Xray with './run.sh migrate'. See './run.sh help' for more information."
 }
 
 # Help
@@ -413,15 +417,15 @@ Help() {
   echo -e "* go"
   echo -e "  One shot start and setup\n"
   echo -e "* start"
-  echo -e "  Start xray-zephyr-migration container\n"
+  echo -e "  Start the xray-zephyr-migration container\n"
   echo -e "* stop"
-  echo -e "  Stop xray-zephyr-migration container\n"
+  echo -e "  Stop the xray-zephyr-migration container\n"
   echo -e "* status"
   echo -e "  Show the status of the xray-zephyr-migration container\n"
   echo -e "* configure"
-  echo -e "  Collect the Zephyr and Xray configuration\n"
+  echo -e "  Setup the Zephyr Scale and Xray configuration\n"
   echo -e "* configure-attachments"
-  echo -e "  Set the attachments path for both Zephyr and Xray\n"
+  echo -e "  Set the attachments path for Zephyr Scale and Xray\n"
   echo -e "* extract"
   echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
@@ -431,9 +435,9 @@ Help() {
   echo -e "* clean"
   echo -e "  Clean the migration\n"
   echo -e "* clean-extracted-data"
-  echo -e "  Clean extracted tables\n"
+  echo -e "  Clean extracted Zephyr Scale data\n"
   echo -e "* reset"
-  echo -e "  Reset the Xray Data Migration\n"
+  echo -e "  Reset the Zephyr Scale to Xray migration\n"
 }
 
 # Run
@@ -447,7 +451,7 @@ Run() {
   elif [ "$1" == "stop" ]; then
     Stop
   elif [ "$1" == "configure" ]; then
-    Welcome "Configuring Xray Data Migration..."
+    Welcome "Configuring the Zephyr Scale to Xray migration..."
     rm -f "$XRAY_ZEPHYR_MIGRATION_CONFIGURED"
     Configure
   elif [ "$1" == "configure-attachments" ]; then
