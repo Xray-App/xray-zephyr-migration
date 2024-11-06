@@ -1,41 +1,54 @@
-# Zephyr → Xray Migration
+# Zephyr Scale → Xray Migration
 
-This repository contains configuration files and scripts to migrate data from [SmartBear Zephyr](https://smartbear.com/test-management/zephyr-scale/) to [Xray Test Management](https://www.getxray.app/). The migration occurs at the database level, retrieving data via the Jira and Zephyr APIs and writing directly into the Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr to Xray.
+This repository contains configuration files and scripts to migrate data from SmartBear's [Zephyr Scale](https://smartbear.com/test-management/zephyr-scale/) to [Xray](https://www.getxray.app/). The migration retrieves data via the Jira and Zephyr Scale APIs, then writes directly to the Jira and Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr Scale to Xray.
 
-The migration copies the specified Zephyr projects from a Jira instance to the same or different Jira instance.
+The migration copies the specified Zephyr Scale projects from a Jira instance to Xray projects on either the same or a different Jira instance.
 
 ```mermaid
 ---
-title: Data Migration from Zephyr to Xray
+title: Data Migration from Zephyr Scale to Xray
 ---
 block-beta
-columns 5
-
-space:4
+columns 6
+%% First row
+zdb[("\nZephyr DB")]:1
+zjdb[("\nJira DB")]:1
+space:2
 block:migd["Docker\n\n\n"]
     columns 1
     space
     migrate["Migration Scripts"]
 end
-space:5
-zdb[("\nZephyr DB")]:1
+space
+%% Second row
+space:6
+%% Third row
+zapi["Zephyr API"]:1
 space
 block:apd[("Docker\n\n\n")]
     columns 1
     space
-    ap["Jira & Zephyr APIs"]
+    ap["Extraction Scripts"]
 end
 space
 xdb[("\nXray DB")]:1
-zdb -- "Extract" --> ap
+space
+%% Fourth row
+space:5
+xjdb[("\nJira DB")]:1
+zapi --> zdb
+zapi --> zjdb
+zapi -- "Extract" --> ap
 ap -- "Load" --> xdb
+ap -- "Load" --> xjdb
 migrate --> xdb
 xdb -- "Transform" --> migrate
+xjdb -- "Transform" --> migrate
 ```
 
 ## Migration Requirements & Pre-requisites
 
-1. The Jira instances that are the source and the target of the migration must be already setup and running.
+1. The Jira instance(s) that are the source and the target of the migration must be already setup and running.
 1. macOS or Linux are recommended for the computer running the migration. The migration automation bash scripts in this repository configure and execute the Docker-based migration tooling, and require a [Unix-like](https://en.wikipedia.org/wiki/Unix-like) operating system that is capable of running bash scripts.
 
 > [!TIP]
@@ -45,36 +58,31 @@ xdb -- "Transform" --> migrate
 1. Install [Docker](https://docs.docker.com/get-docker/) and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
 1. Allocate at least 16 gigabytes (GB) of RAM for running the Docker containers. The Docker default is 50% of the computer's RAM, so the default is sufficient on a computer with 32GB+ of RAM. You can adjust the amount of memory allocated to Docker from the [Docker Desktop settings](https://docs.docker.com/desktop/settings/mac/#advanced).
 
-6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the source of the migration. You will need:
+6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
   - the Jira database host
   - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
   - the name of the Jira database (e.g. `jiradb`)
   - the Jira database username (e.g. `jira_user`)
   - the password for the Jira database user
-7. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
-  - the Jira database host
-  - the [Postgres](https://www.postgresql.org/) port (e.g. `5432`)
-  - the name of the Jira database (e.g. `jiradb`)
-  - the Jira database username (e.g. `jira_user`)
-  - the password for the Jira database user
-8. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
+7. Ensure you have a spreadsheet application that is capable of viewing `.xlsx` files, such as MS Excel, Apple Numbers, Google Sheets, or LibreOffice.
 
 ### Attachment requirements
 
 ```mermaid
 ---
-title: Attachment File Migration from Zephyr to Xray
+title: Attachment File Migration from Zephyr Scale to Xray
 ---
 block-beta
 columns 5
-
-zdb[("\nZephyr DB")]:1
-space:3
+%% First row
+space:4
 xdb[("\nXray DB")]:1
+%% Second row
 space:5
+%% Third row
+zapi["Zephyr API"]:1
+space
 
-zs["Zephyr\nAttachment Storage\nDirectory"]
-space:1
 block:migd["Docker\n\n\n"]
     columns 1
     space
@@ -83,19 +91,17 @@ end
 space:1
 xs["Xray\nAttachment Storage\nDirectory"]
 
-zdb -- "Attachment\nfile references" --> zs
 xdb -- "Attachment\nfile references" --> xs
 
-zdb -- "Attachment data" --> migrate
 migrate -- "Attachment data" --> xdb
 
-zs -- "Copy from" --> migrate
+zapi -- "Attachment data\nCopy from" --> migrate
 migrate -- "Copy to" --> xs
 ```
 
-You will need to provide the path to the Xray attachment file storage locations, where attachment files will be copied during the migration.
+You will need to provide the path to the Xray attachment file storage location, where attachment files will be copied during the migration.
 
-During the migration process, the Zephyr attachment files will be copied to the Xray attachment storage location.
+During the migration process, the Zephyr Scale attachment files will be copied to the Xray attachment storage location.
 
 ## Migration Usage
 
@@ -105,6 +111,7 @@ During the migration process, the Zephyr attachment files will be copied to the 
 
 ```console
 git clone git@github.com:xray-app/xray-zephyr-migration
+```
 
 2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `Xray migration`, an expiration, and the following scope:
   - `read:packages`
@@ -132,7 +139,7 @@ cd xray-zephyr-migration
 
 2. The script begins by pulling the `xray-zephyr-migration` image from the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) (GHCR).
 1. Three new directories will be created in your local copy of this repository:
-- `/config` - Contains configuration files for Zephyr and Xray.
+- `/config` - Contains configuration files for Zephyr Scale and Xray.
 - `/logs` - Log files generated by the migrations you run will be stored here.
 - `/reports` - Any migration reconciliation reports you generate will be stored here.
 7. If any of these directories already exist, they won't be modified by the script.
@@ -147,24 +154,24 @@ cd xray-zephyr-migration
 
 ### Migration configuration
 
-Run the following command to configure settings for Zephyr and Xray:
+Run the following command to configure settings for Zephyr Scale and Xray:
 
 ```console
 ./run.sh configure
 ```
 
 > [!TIP]
-> Note: you can edit the Zephyr configuration directly by editing the `conn:` key of './config/zephyr/zephyr-config.yml'
+> Note: you can edit the Zephyr Scale configuration directly by editing the `conn:` key of `./config/zephyr/zephyr-config.yml`
 
 Follow the steps below at each prompt to complete the configuration:
 
 _Zephyr_
 
-1. Enter the keys of the Zephyr projects to migrate, separated by commas (e.g. `PROJ-123,PROJ-456`).
-1. Enter the domain of the Zephyr server, including the port if necessary (e.g. `https://your-zephyr-domain.com:8443`).
-1. Enter the username to connect to the Zephyr server with. Leave this blank if you are using a bearer token for authentication.
-1. Enter the password for the Zephyr server user. Leave this blank if you are using a bearer token for authentication.
-1. Optionally enter the Zephyr bearer token to use for authentication, or press enter.
+1. Enter the keys of the Zephyr Scale projects to migrate, separated by commas (e.g. `PROJ-123,PROJ-456`).
+1. Enter the domain of the Zephyr Scale server, including the port if necessary (e.g. `https://your-zephyr-domain.com:8443`).
+1. Enter the username to connect to the Zephyr Scale server with. Leave this blank if you are using a bearer token for authentication.
+1. Enter the password for the Zephyr Scale server user. Leave this blank if you are using a bearer token for authentication.
+1. Optionally enter the Zephyr Scale bearer token to use for authentication, or press enter.
 
 _Xray_
 
@@ -177,36 +184,21 @@ _Xray_
 
 Once done, you should see the message `Excellent, your Xray Zephyr Docker is now configured!`.
 
-Next, check the [Xray config](./config/xray/xray-config.yml) and [Zephyr config](./config/zephyr/zephyr-config.yml) files for the updated settings. You can modify these files directly to make any needed changes.
+Next, check the [Xray config](./config/xray/xray-config.yml) and [Zephyr Scale config](./config/zephyr/zephyr-config.yml) files for the updated settings. You can modify these files directly to make any needed changes.
 
-For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr](./Docs/zepyr-configuration.md) configuration documentation.
+For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr Scale](./Docs/zephyr-configuration.md) configuration documentation.
 
 ### Migration (Extract-Load)
 
 1. Run the following command to create the project tables necessary for the migration to Xray:
 
 ```console
-./run.sh retrieve
+./run.sh extract
 ```
 
-Enter 'retrieve' at the prompt to confirm that you're ready to create the project tables.
+Enter 'extract' at the prompt to confirm that you're ready to create the project tables.
 
-You should see the following tables created in Xray:
-- rest_projects
-- rest_testcases
-- rest_testcycles
-- rest_testruns
-- rest_testplans
-- rest_testcase_attachments
-- rest_testcase_customfields
-- rest_testplan_attachments
-- rest_testplan_customfields
-- rest_testcycle_attachments
-- rest_testcycle_customfields
-- rest_testrun_attachments
-- rest_testcase_comments
-
-Once you see the messages `Zephyr test cycle additional attachments retrieval script completed.` and `Zephyr retrieval complete!`, the retrieval process is complete.
+Once you see the messages `Zephyr test cycle additional attachments extraction script completed.` and `Zephyr extraction complete!`, the extraction process is complete.
 
 1. Run the following command to start the migration:
 
@@ -216,7 +208,7 @@ Once you see the messages `Zephyr test cycle additional attachments retrieval sc
 
 Enter 'migrate' at the prompt to confirm that you're ready to migrate the data.
 
-This script will extract data from the Zephyr database and load it into the Xray database.
+This script will read the data extracted from Zephyr Scale, transform it into Xray data, and save it to the Xray database.
 
 You should see the following messages when the migration is complete:
 - `Zephyr migration complete!`
@@ -231,19 +223,27 @@ The second of those messages mentions the steps outlined in the next section.
 1. Scroll to the "Advanced" section in the left sidebar, and click "Indexing".
 1. Select the "Full re-index" option, and click the "Re-index" button.
 1. Click "Re-index" in the confirmation dialog to begin reindexing.
-1. Once the progress bar reaches 100% and you see the message "Re-indexing is 100% complete," check that the migration has taken effect by navigating to the migrated Zephyr project in the web UI from the Projects tab at the top of the page.
+1. Once the progress bar reaches 100% and you see the message "Re-indexing is 100% complete," check that the migration has taken effect by navigating to the migrated Zephyr Scale project(s) in the web UI from the Projects tab at the top of the page.
 
 ### Reconciliation reporting
 
-1. To generate a migration reconciliation report showing the data that was migrated from Zephyr to Xray (and the data that wasn't migrated), run the following command:
+1. To generate a migration reconciliation report showing the data that was migrated from Zephyr Scale to Xray (and the data that wasn't migrated), run the following command:
 
 ```console
 ./run.sh report
 ```
 
-2. The script will output a spreadsheet in the `/reports` directory, showing the reconciliation of data between Zephyr and Xray. A command to open the report will be displayed in the console (e.g. `open ./reports/xray-report-2024-06-28T15:00:00Z.xlsx`). The command will open the report in your default spreadsheet application.
+2. The script will output a spreadsheet in the `/reports` directory, showing the reconciliation of data between Zephyr Scale and Xray. A command to open the report will be displayed in the console (e.g. `open ./reports/xray-report-2024-06-28T15:00:00Z.xlsx`). The command will open the report in your default spreadsheet application.
 
 ## Additional Information
+
+### Start and setup script
+
+You can run the both the setup and migration scripts at once with the following command:
+
+```console
+./run.sh go
+```
 
 ### Cleaning migrated data
 
@@ -259,35 +259,35 @@ The second of those messages mentions the steps outlined in the next section.
 2. Enter `clean` at the prompt to confirm that you're ready to remove the migrated data from Xray.
 1. Once confirmed, the script will remove the migrated data from the Xray database. No data that already existed in Xray separately from the migration will be removed.
 
-### Cleaning retrieved data
+### Cleaning extracted data
 
 > [!CAUTION]
-> Cleaning retrieved data means removing all the data that was extracted from Zephyr and loaded into the Xray database. This data contains a ledger record of the resulting transformation and migration of the data into the Xray tables. If you remove the retrieved data you will no longer be able to use this ledger record to clean the migrated data from Xray in a migration "rollback".
+> Cleaning extracted data means removing all the data that was extracted from Zephyr Scale and loaded into the Xray database. This data contains a ledger record of the resulting transformation and migration of the data into the Xray tables. If you remove the extracted data you will no longer be able to use this ledger record to clean the migrated data from Xray in a migration "rollback".
 
-1. Once you've cleaned the migrated data from Xray, you may want to remove the Zephyr tables that were created during the Zephyr migration. To do this, run the following command:
+1. Once you've cleaned the migrated data from Xray, you may want to remove the Zephyr Scale tables that were created during the extraction process. To do this, run the following command:
 
 ```console
 ./run.sh clean-rest
 ```
 
-2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr tables from the Xray database.
-1. Once confirmed, the script will remove the Zephyr tables from the Xray database.
+2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr Scale tables from the Xray database.
+1. Once confirmed, the script will remove the Zephyr Scaletables from the Xray database.
 
-### Stopping the Docker containers
+### Stopping the Docker container
 
-When you have completed the migration, you will want to stop the migration's Docker containers.
+When you have completed the migration, you will want to stop the migration's Docker container.
 
-To bring down the Docker containers, run the following command:
+To bring down the Docker container, run the following command:
 
 ```console
 ./run.sh stop
 ```
 
-This will not remove the containers or their data.
+This will not remove the container or its data.
 
-### Removing the Docker containers
+### Removing the Docker container
 
-To remove the Docker containers and reset to the initial state, run the following:
+To remove the Docker container and reset to its initial state, run the following:
 
 ```console
 ./run.sh reset
@@ -299,6 +299,7 @@ This command will stop and remove the container, and remove the following direct
 - `/config`
 - `/logs`
 - `/reports`
+- `/source_attachments`
 
 ### Additional commands
 
@@ -309,5 +310,3 @@ You can see a full list of available commands by running:
 ```
 
 Some seldom-needed [additional commands](./Docs/additional-commands.md) are available.
-
-In some rare circumstances, it may be helpful to [run individual data transformation jobs](./Docs/direct-launchers.md).

@@ -2,7 +2,7 @@
 
 # Welcome function, get a msg as parameter and print it in ascii art
 Welcome() {
-  # Echo TR Data Migration in ascii art
+  # Echo Xray Migration ASCII art
   cat <<'EOF'
 
 ____  ___                    
@@ -47,7 +47,7 @@ AskForAttachmentsMethod() {
 CollectXrayAttachmentsPath() {
   # Ask the user for the path, check if it actually exists, if not repeat
   while true; do
-    read -p "Enter the path to the TestRail attachments (default is $PWD/attachments_storage): " xray_attachments_path
+    read -p "Enter the path to the Xray attachments storage location (default is $PWD/attachments_storage): " xray_attachments_path
     if [ -z "$xray_attachments_path" ]; then
       xray_attachments_path="$PWD/attachments_storage"
     fi
@@ -254,7 +254,7 @@ Configure() {
 }
 
 ConfigureAttachmentsPaths() {
-  Welcome "Configuring Zephyr and Xray attachments paths..."
+  Welcome "Configuring Xray attachments paths..."
   # return an error if container is not running
   ContainerDidStart
   containerStarted=$?
@@ -362,7 +362,7 @@ Extract() {
 }
 
 Migrate() {
-  Welcome "Migrating TR Data Migration..."
+  Welcome "Migrating data..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }
@@ -378,7 +378,7 @@ Report() {
 # Clean
 
 CleanMigration() {
-  Welcome "Cleaning TR Data Migration..."
+  Welcome "Cleaning migrated data..."
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/clean_migration
 }
 
@@ -426,14 +426,12 @@ Help() {
   echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
   echo -e "  Migrate the projects\n"
-  echo -e "* migrate-attachments"
-  echo -e "  Migrate the attachments\n"
   echo -e "* report"
   echo -e "  Generate the reconciliation report\n"
   echo -e "* clean"
   echo -e "  Clean the migration\n"
   echo -e "* clean-extracted-data"
-  echo -e "  Remove extraction and migration data from the database\n"
+  echo -e "  Clean extracted tables\n"
   echo -e "* reset"
   echo -e "  Reset the Xray Data Migration\n"
 }
