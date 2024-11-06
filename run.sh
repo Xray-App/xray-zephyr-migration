@@ -24,11 +24,23 @@ DOCKER_TEMP_CONTAINER_NAME=$DOCKER_CONTAINER_NAME-temp
 DOCKER_IMAGE_TAG=ghcr.io/$GH_ACTOR/$DOCKER_IMAGE_NAME
 DOCKER_IMAGE=$DOCKER_IMAGE_TAG:$VERSION
 # Attachments
+ATTACHMENTS_METHOD_FILE=$PWD/attachments_method.txt
 XRAY_ATTACHMENTS_FILE=./config/xray/attachments_path.txt
 # Xray and Zephyr Configuration
 XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
 
 # Attachments paths
+
+AskForAttachmentsMethod() {
+  echo # Move to a new line
+  read -p "Would you like to use SFTP to migrate attachments directly to the Jira instance machine? (y/n) " -n 1 -r
+  echo # Move to a new line
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo 'local' > $ATTACHMENTS_METHOD_FILE
+  else
+    echo 'sftp' > $ATTACHMENTS_METHOD_FILE
+  fi
+}
 
 # Collect the Xray attachments path from the user, default is $PWD/attachments_storage
 # save it in XRAY_ATTACHMENTS_FILE
@@ -117,8 +129,14 @@ CreateContainer() {
   docker ps -a | grep $DOCKER_CONTAINER_NAME > /dev/null 2>&1
   if [ $? -ne 0 ]; then
       echo "Creating the container with the mounted volumes..."
-      MaybeCollectXrayAttachmentsPath $force_collect_attachments
-      xray_attachments_path=$(cat $XRAY_ATTACHMENTS_FILE)
+      AskForAttachmentsMethod
+      attachments_method=$(cat $ATTACHMENTS_METHOD_FILE)
+      if [ $attachments_method = 'local' ]; then
+        MaybeCollectXrayAttachmentsPath $force_collect_attachments
+        xray_attachments_path=$(cat $XRAY_ATTACHMENTS_FILE)
+      else
+        xray_attachments_path="$PWD/source_attachments"
+      fi
       echo "Now starting the container with Xray path $xray_attachments_path..."
       docker create -it --name $DOCKER_CONTAINER_NAME \
         -v $(pwd)/config/xray:/app/config/xray/ \
@@ -184,6 +202,8 @@ Reset() {
   then
     exit 1
   fi
+  echo "Removing $ATTACHMENTS_METHOD_FILE"
+  rm -f $ATTACHMENTS_METHOD_FILE
   echo "Removing $XRAY_ZEPHYR_MIGRATION_CONFIGURED"
   rm -f $XRAY_ZEPHYR_MIGRATION_CONFIGURED
   StopAndRemoveContainer
@@ -221,7 +241,7 @@ Configure() {
     exit 1
   fi
   # configure the container
-  docker exec -it -e FILE_LOG_LEVEL=OFF $DOCKER_CONTAINER_NAME bin/collect-info zephyr
+  docker exec -it -e FILE_LOG_LEVEL=OFF $DOCKER_CONTAINER_NAME bin/collect-info zephyr $(cat $ATTACHMENTS_METHOD_FILE)
   MaybeCopySSHKeys
   # Touch $XRAY_ZEPHYR_MIGRATION_CONFIGURED unless previous command failed
   if [ $? -ne 0 ]; then
@@ -335,10 +355,10 @@ CopySSHKeys() {
 
 # Migration handling
 
-Retrieve() {
-  Welcome "Retrieving Xray Data Migration..."
+Extract() {
+  Welcome "Extracting Xray Data Migration..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/retrieve_projects
+  docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
 Migrate() {
@@ -363,7 +383,7 @@ CleanMigration() {
 }
 
 CleanRest() {
-  Welcome "Cleaning retrieved tables..."
+  Welcome "Cleaning extracted tables..."
   docker exec -it $DOCKER_CONTAINER_NAME util/clean_rest_tables
 }
 
@@ -381,14 +401,14 @@ Go() {
   if [ $configured -ne 1 ]; then
     Configure
   fi
-  echo "Xray Data Migration setup complete! Now you can retrieve the data with './run.sh retrieve' and then migrate them with './run.sh migrate'. See './run.sh help' for more information."
+  echo "Xray Data Migration setup complete! Now you can extract the data with './run.sh extract' and then migrate them with './run.sh migrate'. See './run.sh help' for more information."
 }
 
 # Help
 
 Help() {
   Welcome
-  echo -e "Usage: $0 start|stop|status|reset|configure|status|enumerate|migrate|migrate-attachments|clean|clean-rest"
+  echo -e "Usage: $0 start|stop|status|reset|configure|status|enumerate|migrate|migrate-attachments|clean|clean-extracted-data"
   echo -e ""
   echo -e "* go"
   echo -e "  One shot start and setup\n"
@@ -402,7 +422,7 @@ Help() {
   echo -e "  Collect the Zephyr and Xray configuration\n"
   echo -e "* configure-attachments"
   echo -e "  Set the attachments path for both Zephyr and Xray\n"
-  echo -e "* retrieve"
+  echo -e "* extract"
   echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
   echo -e "  Migrate the projects\n"
@@ -412,8 +432,8 @@ Help() {
   echo -e "  Generate the reconciliation report\n"
   echo -e "* clean"
   echo -e "  Clean the migration\n"
-  echo -e "* clean-rest"
-  echo -e "  Clean retrieved tables\n"
+  echo -e "* clean-extracted-data"
+  echo -e "  Remove extraction and migration data from the database\n"
   echo -e "* reset"
   echo -e "  Reset the Xray Data Migration\n"
 }
@@ -436,15 +456,15 @@ Run() {
     ConfigureAttachmentsPaths
   elif [ "$1" == "status" ]; then
     Status
-  elif [ "$1" == "retrieve" ]; then
-    Retrieve
+  elif [ "$1" == "extract" ]; then
+    Extract
   elif [ "$1" == "migrate" ]; then
     Migrate
   elif [ "$1" == "report" ]; then
     Report
   elif [ "$1" == "clean" ]; then
     CleanMigration
-  elif [ "$1" == "clean-rest" ]; then
+  elif [ "$1" == "clean-extracted-data" ]; then
     CleanRest
   elif [ "$1" == "reset" ]; then
     Reset
