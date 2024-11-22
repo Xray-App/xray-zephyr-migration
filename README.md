@@ -61,13 +61,13 @@ This means there are 6 possible cases, as seen in this table.
 | Same Jira      | new Xray project / same Jira      | convert non-Xray project / same Jira      | migrate data to existing Xray project / same Jira      |
 | Different Jira | new Xray project / different Jira | convert non-Xray project / different Jira | migrate data to existing Xray project / different Jira |
 
-![Migration with different Jira instances](https://github.com/xray-app/xray-data-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-with-different-Jira-Instances.drawio.png)
+![Migration with different Jira instances](https://github.com/xray-app/xray-zephyr-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-with-different-Jira-Instances.drawio.png)
 
 ### Single Jira Instance Migration
 
 There is also a simpler case for migrating between Zephyr Scale and Xray on the same Jira instance.
 
-<img src="https://github.com/xray-app/xray-data-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-within-the-same-Jira-Instance.drawio.png" alt="Migration within the same Jira instance" width="600"/>
+<img src="https://github.com/xray-app/xray-zephyr-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-within-the-same-Jira-Instance.drawio.png" alt="Migration within the same Jira instance" width="600"/>
 
 ### Zephyr Scale → Xray Entities Mapping
 
