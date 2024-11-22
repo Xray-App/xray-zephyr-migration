@@ -290,7 +290,7 @@ The second of those messages mentions the steps outlined in the next section.
 1. Once the Jira server is restarted, log in via the web browser and navigate to settings by clicking the gear icon in the top right corner and selecting "System" from the dropdown menu.
 1. Scroll to the "Advanced" section in the left sidebar, and click "Indexing".
 1. Select the "Full re-index" option, and click the "Re-index" button.
-1. Click "Re-index" in the confirmation dialog to begin reindexing.
+1. Click "Re-index" in the confirmation dialog to begin re-indexing.
 1. Once the progress bar reaches 100% and you see the message "Re-indexing is 100% complete," check that the migration has taken effect by navigating to the migrated Zephyr Scale project(s) in the web UI from the Projects tab at the top of the page.
 
 ### Reconciliation reporting
@@ -339,7 +339,7 @@ You can run the both the setup and migration scripts at once with the following 
 ```
 
 2. Enter `clean` at the prompt to confirm that you're ready to remove the Zephyr Scale tables from the Xray database.
-1. Once confirmed, the script will remove the Zephyr Scaletables from the Xray database.
+1. Once confirmed, the script will remove the Zephyr Scale tables from the Xray database.
 
 ### Stopping the Docker container
 
