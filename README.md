@@ -46,6 +46,55 @@ xdb -- "Transform" --> migrate
 xjdb -- "Transform" --> migrate
 ```
 
+## Migration Process
+
+There are 3 primary factors when considering migrating data from Zephyr Scale to Xray.
+
+1. Is the source and the target on the same Jira instance, or a different instance?
+2. Does the target project already exist in Jira, or is it a new project?
+3. If it is an existing project, is the target project already an Xray project?
+
+This means there are 6 possible cases, as seen in this table.
+
+|                | New Target Project                | non-Xray Target Project                   | Existing Xray Target Project                           |
+|:---------------|:----------------------------------|:------------------------------------------|:-------------------------------------------------------|
+| Same Jira      | new Xray project / same Jira      | convert non-Xray project / same Jira      | migrate data to existing Xray project / same Jira      |
+| Different Jira | new Xray project / different Jira | convert non-Xray project / different Jira | migrate data to existing Xray project / different Jira |
+
+![Migration with different Jira instances](https://github.com/xray-app/xray-data-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-with-different-Jira-Instances.drawio.png)
+
+### Single Jira Instance Migration
+
+There is also a simpler case for migrating between Zephyr Scale and Xray on the same Jira instance.
+
+<img src="https://github.com/xray-app/xray-data-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-within-the-same-Jira-Instance.drawio.png" alt="Migration within the same Jira instance" width="600"/>
+
+### Zephyr Scale → Xray Entities Mapping
+
+The table below illustrates the mappings between Zephyr Scale and Xray.
+
+| Zephyr                  | Xray            | Notes                                                                                      |
+|:------------------------|:----------------|:-------------------------------------------------------------------------------------------|
+| Project                 | Project         |                                                                                            |
+| User                    | User            |                                                                                            |
+|                         |                 |                                                                                            |
+| CUSTOM FIELDS           |                 |                                                                                            |
+| Test Case Custom Field  | Custom Field    |                                                                                            |
+| Test Plan Custom Field  | Custom Field    |                                                                                            |
+| Test Cycle Custom Field | Custom Field    |                                                                                            |
+|                         |                 |                                                                                            |
+| ENTITIES                |                 |                                                                                            |
+| Test Case               | Jira Issue      |                                                                                            |
+| Test Cycle              | Jira Issue      |                                                                                            |
+| Test Run                | Test Run        | The destination table is (project key)_`TEST_RUN` (e.g. `AO_ABC123_TEST_RUN`) in Xray.     |
+| Test Plan               | Jira Issue      |                                                                                            |
+|                         |                 |                                                                                            |
+| ATTACHMENTS             |                 |                                                                                            |
+| Test Case Attachments   | File Attachment |                                                                                            |
+| Test Cycle Attachments  | File Attachment |                                                                                            |
+| Test Run Attachments    | Attachment      | The destination table is (project key)_`ATTACHMENT` (e.g. `AO_ABC123_ATTACHMENT`) in Xray. |
+| Test Plan Attachments   | File Attachment |                                                                                            |
+
 ## Migration Requirements & Pre-requisites
 
 1. The Jira instance(s) that are the source and the target of the migration must be already setup and running.
@@ -203,7 +252,7 @@ _Xray_
 
 Once done, you should see the message `Excellent, your Xray Zephyr Docker is now configured!`.
 
-Next, check the [Xray config](./config/xray/xray-config.yml) and [Zephyr Scale config](./config/zephyr/zephyr-config.yml) files for the updated settings. You can modify these files directly to make any needed changes.
+Next, check the Xray config at `./config/xray/xray-config.yml` and Zephyr Scale config at `./config/zephyr/zephyr-config.yml` for the updated settings. You can modify these files directly to make any needed changes.
 
 For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr Scale](./Docs/zephyr-configuration.md) configuration documentation.
 
