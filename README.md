@@ -188,7 +188,7 @@ cd xray-zephyr-migration
 ./run.sh start
 ```
 
-2. The script begins by pulling the `xray-zephyr-migration` image from the [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry) (GHCR).
+2. The script begins by pulling the `xray-zephyr-migration` image from the GHCR.
 1. After the image is pulled, you should see the following message:
 
 ```console
