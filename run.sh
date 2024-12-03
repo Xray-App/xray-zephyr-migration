@@ -88,7 +88,7 @@ CreateImage() {
   docker images | grep $DOCKER_IMAGE_TAG | grep $VERSION > /dev/null 2>&1
   if [ $? -ne 0 ]; then
       echo "Pulling the image..."
-      docker pull $DOCKER_IMAGE
+      docker pull --platform linux/amd64 $DOCKER_IMAGE
   fi
 
   # If /config/xray or /config/zephyr don't exists, copy them from the docker volume
