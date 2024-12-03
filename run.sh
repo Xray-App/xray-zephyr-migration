@@ -88,7 +88,10 @@ CreateImage() {
   docker images | grep $DOCKER_IMAGE_TAG | grep $VERSION > /dev/null 2>&1
   if [ $? -ne 0 ]; then
       echo "Pulling the image..."
-      docker pull --platform linux/amd64 $DOCKER_IMAGE
+      if ! docker pull --platform linux/amd64 $DOCKER_IMAGE; then
+        echo "Failed to pull the image, make sure you logged in via 'docker login ghcr.io', that your user is part of the '$GH_ACTOR' organization on GitHub and that the PAT you are using has the read:packages scope."
+        exit 1
+      fi
   fi
 
   # If /config/xray or /config/zephyr don't exists, copy them from the docker volume
