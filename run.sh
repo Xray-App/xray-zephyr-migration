@@ -20,7 +20,7 @@ EOF
   sleep 1
 }
 # Docker image
-VERSION=latest
+VERSION=bago
 GH_ACTOR=xray-app
 DOCKER_IMAGE_NAME=xray-data-migration
 DOCKER_CONTAINER_NAME=xray-zephyr-migration
@@ -88,7 +88,7 @@ CreateImage() {
   docker images | grep $DOCKER_IMAGE_TAG | grep $VERSION > /dev/null 2>&1
   if [ $? -ne 0 ]; then
       echo "Pulling the image..."
-      if ! docker pull --platform linux/amd64 $DOCKER_IMAGE; then
+      if ! docker pull $DOCKER_IMAGE; then
         echo "Failed to pull the image, make sure you logged in via 'docker login ghcr.io', that your user is part of the '$GH_ACTOR' organization on GitHub and that the PAT you are using has the read:packages scope."
         exit 1
       fi
