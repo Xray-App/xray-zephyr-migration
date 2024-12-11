@@ -20,7 +20,7 @@ EOF
   sleep 1
 }
 # Docker image
-VERSION=bago
+VERSION=latest
 GH_ACTOR=xray-app
 DOCKER_IMAGE_NAME=xray-data-migration
 DOCKER_CONTAINER_NAME=xray-zephyr-migration
