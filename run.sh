@@ -369,10 +369,22 @@ Extract() {
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
+DryExtract() {
+  Welcome "Extracting the Zephyr Scale projects (dry run)..."
+  CanGo
+  docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects --dry
+}
+
 Migrate() {
   Welcome "Migrating the Zephyr Scale projects to Xray..."
   CanGo
   docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
+}
+
+DryMigrate() {
+  Welcome "Migrating the Zephyr Scale projects to Xray (dry run)..."
+  CanGo
+  docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects --dry
 }
 
 # Report
@@ -464,8 +476,12 @@ Run() {
     Status
   elif [ "$1" == "extract" ]; then
     Extract
+  elif [ "$1" == "dry-extract" ]; then
+    DryExtract
   elif [ "$1" == "migrate" ]; then
     Migrate
+  elif [ "$1" == "dry-migrate" ]; then
+    DryMigrate
   elif [ "$1" == "report" ]; then
     Report
   elif [ "$1" == "clean" ]; then
