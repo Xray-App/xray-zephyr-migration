@@ -154,6 +154,22 @@ You can choose to copy migrated attachments remotely to the target Xray instance
 
 During the migration process, the Zephyr Scale attachment files will be copied to the Xray attachment storage location.
 
+## Migration Limitations
+
+### Limitations inherited from Xray and Jira
+
+There are a few limitations on the migration caused by Jira.
+
+1. You can have only up to 3 step custom fields: Jira allows only up to 6 custom fields on case steps but 3 are already in use (they are step, data and expected results).
+1. You can have only up to 12 test run custom fields: Jira allows only up to 12 custom fields on test runs.
+1. Test cycle folders: test cycle folders don't really have a use case in Xray, so they are not migrated.
+1. Test plans folders: test plans folders are migrated but they serve a different purposes in Xray, they are still collection of test cases instead of plans, even if they collect cases inside the same plan.
+1. Multi-line string custom fields: these custom fields in Jira doesn't support markdown or html formatting, even if these are migrated as markdown to not lose the formatting some things won't be rendered, like attachments. Links are automatically formatted to be clickable in Jira. This is valid for Test, Test Execution and Test Plan custom fields (since they are Jira fields), instead Test Runs support markdown since they are Xray fields.
+
+### Limitations of the migration script
+
+The migration script has the ability to migrate the attachments directly in Jira if provided with an SSH connection details. To do such thing you need to provide a user that has permissions above or at least equal to the Jira user created during the installation.
+
 ## Migration Usage
 
 ### Docker and GitHub repository preparation
