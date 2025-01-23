@@ -5,7 +5,7 @@
 - [Migration Process](#migration-process)
   - [Multiple Jira Instance Migration](#multiple-jira-instance-migration)
   - [Single Jira Instance Migration](#single-jira-instance-migration)
-  - [Zephyr Scale → Xray Entities Mapping](#zephyr-scale-→-xray-entities-mapping)
+  - [Zephyr Scale to Xray Entities Mapping](#zephyr-scale-to-xray-entities-mapping)
 - [Migration Requirements & Pre-requisites](#migration-requirements--pre-requisites)
   - [Attachment requirements](#attachment-requirements)
 - [Migration Limitations](#migration-limitations)
@@ -104,7 +104,7 @@ There is also a simpler case for migrating between Zephyr Scale and Xray on the 
 
 <img src="https://github.com/xray-app/xray-zephyr-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-within-the-same-Jira-Instance.drawio.png" alt="Migration within the same Jira instance" width="600"/>
 
-### Zephyr Scale → Xray Entities Mapping
+### Zephyr Scale to Xray Entities Mapping
 
 The table below illustrates the mappings between Zephyr Scale and Xray.
 
