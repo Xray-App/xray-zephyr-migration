@@ -394,3 +394,105 @@ You can see a full list of available commands by running:
 ```
 
 Some seldom-needed [additional commands](./Docs/additional-commands.md) are available.
+
+# Windows destination
+
+This migration tool supports Jira running on Windows as source and target out of the box. The only limitation is for the attachments migration.
+
+## Install and configure OpenSSH Server
+
+To have the attachments migrated directly to the target instance you can provide the details of the SSH connection. Here are the details of how to configure the OpenSSH server on the target instance.
+
+To install OpenSSH server follow the next steps.
+
+Open PowerShell as Administrator and run the following command:
+
+```powershell
+Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
+```
+
+If OpneSSHServer is not installed then:
+
+```powershell
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+```
+
+and start it with:
+
+```powershell
+Start-Service sshd
+```
+
+Now configure it to start automatically at boot time:
+
+```powershell
+Set-Service -Name sshd -StartupType 'Automatic'
+```
+
+and make sure the firewall rule is enabled:
+
+```powershell
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 38922
+}
+```
+
+Edit the sshd_config file at C:\ProgramData\ssh\sshd_config and make sure only the following lines are present and not commented out:
+
+```
+Port 38922
+PermitRootLogin yes
+StrictModes yes
+
+AuthorizedKeysFile	.ssh/authorized_keys
+
+PasswordAuthentication no
+
+Subsystem	sftp	sftp-server.exe
+
+AllowUsers Administrator
+```
+
+Restart the sshd service:
+
+```powershell
+Restart-Service sshd
+```
+
+Now create a new key pair on the client machine:
+
+```zsh
+ssh-keygen -t ed25519
+```
+
+save it somewhere safe, we will use it later.
+
+Now copy the public key to the authorized_keys file at C:\Users\Administrator\.ssh\authorized_keys and set the correct permissions:
+
+```powershell
+# Create .ssh directory if it doesn't exist
+New-Item -Path $env:USERPROFILE\.ssh -ItemType Directory -Force
+
+# Create authorized_keys file with your public key
+$sshKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPU7TFX7ybauhdxBf/ijMYHtHPKaalCcvwvmA10H58VN user@host"
+Set-Content $env:USERPROFILE\.ssh\authorized_keys $sshKey
+
+# Remove inherited permissions
+icacls $env:USERPROFILE\.ssh /inheritance:r
+icacls $env:USERPROFILE\.ssh\authorized_keys /inheritance:r
+
+# Grant permissions to Administrator and SYSTEM
+icacls $env:USERPROFILE\.ssh /grant "Administrator:(F)"
+icacls $env:USERPROFILE\.ssh /grant "SYSTEM:(F)"
+icacls $env:USERPROFILE\.ssh\authorized_keys /grant "Administrator:(F)"
+icacls $env:USERPROFILE\.ssh\authorized_keys /grant "SYSTEM:(F)"
+
+# Restart the SSH service
+Restart-Service sshd
+```
+
+Now you should be able to ssh in the instance using the following command:
+
+```zsh
+ssh -p 38922 -i ~/.ssh/your_key_file Administrator@sl-jira-win.com
+```
