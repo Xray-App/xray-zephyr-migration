@@ -1,5 +1,38 @@
 # Zephyr Scale → Xray Migration
 
+## Table of Contents
+- [Overview](#overview)
+- [Migration Process](#migration-process)
+  - [Multiple Jira Instance Migration](#multiple-jira-instance-migration)
+  - [Single Jira Instance Migration](#single-jira-instance-migration)
+  - [Zephyr Scale → Xray Entities Mapping](#zephyr-scale-→-xray-entities-mapping)
+- [Migration Requirements & Pre-requisites](#migration-requirements--pre-requisites)
+  - [Attachment requirements](#attachment-requirements)
+- [Migration Limitations](#migration-limitations)
+  - [Limitations inherited from Xray and Jira](#limitations-inherited-from-xray-and-jira)
+  - [Limitations of the migration script](#limitations-of-the-migration-script)
+- [Migration Usage](#migration-usage)
+  - [Docker and GitHub repository preparation](#docker-and-github-repository-preparation)
+  - [Container setup](#container-setup)
+  - [Migration configuration](#migration-configuration)
+  - [Xray Configuration](#xray-configuration)
+  - [Zephyr Scale Configuration](#zephyr-scale-configuration)
+  - [Migration (Extract-Load)](#migration-extract-load)
+  - [Restart and re-index Jira server](#restart-and-re-index-jira-server)
+  - [Reconciliation reporting](#reconciliation-reporting)
+- [Additional Information](#additional-information)
+  - [Start and setup script](#start-and-setup-script)
+  - [Cleaning migrated data](#cleaning-migrated-data)
+  - [Cleaning extracted data](#cleaning-extracted-data)
+  - [Stopping the Docker container](#stopping-the-docker-container)
+  - [Removing the Docker container](#removing-the-docker-container)
+  - [Additional commands](#additional-commands)
+  - [Checking the status of the containers](#checking-the-status-of-the-containers)
+  - [Windows destination](#windows-destination)
+  - [Install and configure OpenSSH Server](#install-and-configure-openssh-server)
+
+## Overview
+
 This repository contains configuration files and scripts to migrate data from SmartBear's [Zephyr Scale](https://smartbear.com/test-management/zephyr-scale/) to [Xray](https://www.getxray.app/). The migration retrieves data via the Jira and Zephyr Scale APIs, then writes directly to the Jira and Xray database. The migration ELT (Extract-Load-Transform) process uses [Docker](https://docker.com) containers and data transformation scripts, to move data from Zephyr Scale to Xray.
 
 The migration copies the specified Zephyr Scale projects from a Jira instance to Xray projects on either the same or a different Jira instance.
@@ -60,6 +93,8 @@ This means there are 6 possible cases, as seen in this table.
 |:---------------|:----------------------------------|:------------------------------------------|:-------------------------------------------------------|
 | Same Jira      | new Xray project / same Jira      | convert non-Xray project / same Jira      | migrate data to existing Xray project / same Jira      |
 | Different Jira | new Xray project / different Jira | convert non-Xray project / different Jira | migrate data to existing Xray project / different Jira |
+
+### Multiple Jira Instance Migration
 
 <img src="https://github.com/xray-app/xray-zephyr-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-with-Different-Jira-Instances.drawio.png" alt="Migration with different Jira instances"/>
 
@@ -272,6 +307,259 @@ Next, check the Xray config at `./config/xray/xray-config.yml` and Zephyr Scale 
 
 For an in-depth explanation of the settings within the configuration files, refer to the [Xray](./Docs/xray-configuration.md) and [Zephyr Scale](./Docs/zephyr-configuration.md) configuration documentation.
 
+### Xray Configuration
+
+NOTE: If you need to reset the Xray configuration to its default values at any point, you can do so by running the following command:
+
+```bash
+git restore data-engineering/config/xray/xray-config.yml
+```
+
+#### Configuration Options
+
+`project_name_prefix` - Specify the prefix to be added to the project name to avoid conflicts with existing projects in Xray.
+
+Example:
+```yml
+project_name_prefix: "Zephyr"
+```
+
+`project_name_suffix` - Specify the suffix to be added to the project name to avoid conflicts with existing projects in Xray.
+
+Example:
+```yml
+project_name_suffix: "Xray"
+```
+
+`project_key_suffix` - Specify the suffix to be added to the project key to avoid conflicts with existing project keys.
+Example:
+```yml
+project_key_suffix: "X"
+```
+
+`jira_data_path` - Specify the path to the Jira attachment data directory on the remote server.
+
+Example:
+```yml
+jira_data_path: /var/atlassian/application-data/jira/data/attachments/
+```
+
+#### SSH Options
+
+The following options should be added to the `ssh` section of the `xray-config.yml` file.
+
+Example:
+```yml
+ssh:
+  host: ssh.example.com
+  username: user
+  password: password
+```
+
+`host` - Specify the hostname of the remote server.
+
+Example:
+```yml
+host: ssh.example.com
+```
+
+`username` - Specify the username to access the remote server.
+
+Example:
+```yml
+username: user
+```
+
+`password` - Specify the password of the previously specified user to access the remote server.
+
+Example:
+```yml
+password: password
+```
+
+#### Database Options
+
+The following options should be added to the `db` section of the `xray-config.yml` file.
+
+Example:
+```yml
+db:
+  host: jira-database-instance.com
+  port: 5432
+  database: jiradb
+  username: jirauser
+  password: jirapassword
+```
+
+`host` - Specify the hostname of the database server.
+
+Example:
+```yml
+host: jira-database-instance.com
+```
+
+`port` - Specify the port number of the database server.
+
+Example:
+```yml
+port: 5432
+```
+
+`database` - Specify the name of the database.
+
+Example:
+```yml
+database: jiradb
+```
+
+`username` - Specify the username to access the database.
+
+Example:
+```yml
+username: jirauser
+```
+
+`password` - Specify the password of the previously specified user to access the database.
+
+Example:
+```yml
+password: jirapassword
+```
+
+### Zephyr Scale Configuration
+
+NOTE: If you need to reset the Zephyr configuration to its default values at any point, you can do so by running the following command:
+
+```bash
+git restore data-engineering/config/zephyr/zephyr-config.yml
+```
+
+#### Configuration Options
+
+`project_keys` - Specify the list of Zephyr projects to be migrated by adding their respective project keys as an array.
+
+Example:
+```yml
+project_keys: ["PK1", "PK2"]
+```
+
+`test_case_statuses_map` - Specify how Zephyr test case statuses should be mapped to Xray issue statuses.
+
+Example:
+```yml
+test_case_statuses_map:
+  Approved: Open
+  Deprecated: Closed
+  Draft: Open
+```
+
+If the status is not found in the `test_case_statuses_map`, the `default_test_case_status` will be used.
+
+Example:
+```yml
+default_test_case_status: Open
+```
+
+`test_plan_statuses_map` - Specify how Zephyr test plan statuses should be mapped to Xray issue statuses.
+
+Example:
+```yml
+test_plan_statuses_map:
+  Approved: Open
+  Deprecated: Closed
+  Draft: Open
+```
+
+If the status is not found in the `test_plan_statuses_map`, the `default_test_plan_status` will be used.
+
+Example:
+```yml
+default_test_plan_status: Open
+```
+
+`test_run_statuses_map` - Specify how Zephyr test run statuses should be mapped to Xray issue statuses.
+
+Example:
+```yml
+test_run_statuses_map:
+  Not Executed: TODO
+  In Progress: EXECUTING
+  Pass: PASS
+  Fail: FAIL
+  Blocked: ABORTED
+```
+
+If the status is not found in the `test_run_statuses_map`, the `default_test_run_status` will be used.
+
+Example:
+```yml
+default_test_run_status: TODO
+```
+
+`priorities_map` - Specify how Zephyr priorities should be mapped to Xray priorities.
+
+Example:
+```yml
+priorities_map:
+  Low: Low
+  Normal: Medium
+  High: High
+```
+
+If the priority is not found in the `priorities_map`, the `default_priority` will be used.
+
+Example:
+```yml
+default_priority: Medium
+```
+
+`default_user_key` - Specify the default user key to be used during migration. This user will be used as a fallback where a Zephyr user is either not mapped or found.
+
+Example:
+```yml
+default_user_key: JIRAUSER10000
+```
+
+`add_to_admin` - This flag specifies whether or not the default user should be given the Administrators project role.
+
+Example:
+```yml
+add_to_admin: true
+```
+
+#### Connection Options
+
+The following options should be added to the `conn` section of the `zephyr-config.yml` file.
+
+Example:
+```yml
+conn:
+  domain: https://jira-instance.com:8443
+  username: admin
+  password: jir4
+```
+
+`domain` - Specify the URL of the Jira server.
+
+Example:
+```yml
+domain: https://jira-instance.com:8443
+```
+
+`username` - Specify the username to access the Jira server.
+
+Example:
+```yml
+username: admin
+```
+
+`password` - Specify the password of the previously specified user to access the Jira server.
+
+Example:
+```yml
+password: jir4
+```
+
 ### Migration (Extract-Load)
 
 1. Run the following command to create the project tables necessary for the migration to Xray:
@@ -393,13 +681,62 @@ You can see a full list of available commands by running:
 ./run.sh help
 ```
 
-Some seldom-needed [additional commands](./Docs/additional-commands.md) are available.
+The output of which is as follows:
 
-# Windows destination
+```plaintext
+* go
+  One shot start and setup
+
+* start
+  Start xray-zephyr-migration container
+
+* stop
+  Stop xray-zephyr-migration container
+
+* status
+  Show the status of the xray-zephyr-migration container
+
+* configure
+  Collect the Zephyr and Xray configuration
+
+* extract
+  Create the project tables necessary for the migration to Xray
+
+* migrate
+  Migrate the projects
+
+* report
+  Generate the reconciliation report
+
+* clean
+  Clean the migration
+
+* clean-extracted-data
+  Clean extracted tables
+
+* reset
+  Reset the Xray Data Migration
+```
+
+### Checking the status of the containers
+
+To check the status of the Zephyr migration container, run the following command:
+
+```bash
+./run.sh status
+```
+
+The three possible statuses for the Zephyr migration container are:
+- `unknown`: The container was not found. You can create any missing containers with `./run.sh start`.
+- `running`: The container was found and is running.
+- `stopped`: The container was found and has stopped.
+
+
+### Windows destination
 
 This migration tool supports Jira running on Windows as source and target out of the box. The only limitation is for the attachments migration.
 
-## Install and configure OpenSSH Server
+### Install and configure OpenSSH Server
 
 To have the attachments migrated directly to the target instance you can provide the details of the SSH connection. Here are the details of how to configure the OpenSSH server on the target instance.
 
