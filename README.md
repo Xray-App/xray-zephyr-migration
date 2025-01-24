@@ -192,25 +192,25 @@ During the migration process, the Zephyr Scale attachment files will be copied t
 
 ## Migration Limitations
 
-### Limitations inherited from Xray and Jira
+### Limitations from Xray and Jira
 
-There are a few limitations on the migration caused by Jira.
+There are a few limitations of the migration caused by Xray's use of Jira for storing certain entities.
 
-1. You can have only up to 3 step custom fields: Jira allows only up to 6 custom fields on case steps but 3 are already in use (they are step, data and expected results).
-1. You can have only up to 12 test run custom fields: Jira allows only up to 12 custom fields on test runs.
-1. Test cycle folders: test cycle folders don't really have a use case in Xray, so they are not migrated.
-1. Test plans folders: test plans folders are migrated but they serve a different purposes in Xray, they are still collection of test cases instead of plans, even if they collect cases inside the same plan.
-1. Multi-line string custom fields: these custom fields in Jira doesn't support markdown or html formatting, even if these are migrated as markdown to not lose the formatting some things won't be rendered, like attachments. Links are automatically formatted to be clickable in Jira. This is valid for Test, Test Execution and Test Plan custom fields (since they are Jira fields), instead Test Runs support markdown since they are Xray fields.
+1. You can only migrate up to 3 step custom fields: Jira allows only up to 6 custom fields on case steps but 3 are already in use (they are step, data and expected results).
+1. You can have migrate up to 12 test run custom fields: Jira allows only up to 12 custom fields on test runs.
+1. Test cycle folders: test cycle folders don't really have a use in Xray, so they are not migrated.
+1. Test plans folders: test plans folders are migrated, but they serve a different purposes in Xray. They are still collections of test cases, instead of plans, even if they collect test cases inside the same plan.
+1. Multi-line string custom fields: these custom fields in Jira don't support markdown or HTML formatting. Even if the content is migrated as markdown text, so as to not lose any of the formatting, some things in the markdown won't be rendered, like attachments. Links are automatically formatted to be clickable in Jira. This is valid for Test, Test Execution and Test Plan custom fields (since they are Jira fields). Test Runs do support markdown since they are Xray fields.
 1. In Zephyr Scale, all 3 script types (PLAIN_TEXT, BDD, STEP_BY_STEP) can have actual results. Instead Xray only have the actual results for STEP_BY_STEP scripts. So the actual results for the other scripts are not migrated.
-1. For PLAIN_TEXT scripts, in Zephyr Scale the script can contains attachments, since in Xray that's a simple text field images are not supported. The attachments are migrated as Test attachments.
+1. For PLAIN_TEXT scripts, in Zephyr Scale the script can contains attachments. In Xray, that's a simple text field, so images are not supported. Any inline attachments are migrated as Test attachments instead.
 
-### Limitations of the migration script
+### Limitations from the migration process
 
-The migration script has the ability to migrate the attachments directly in Jira if provided with an SSH connection details. To do such thing you need to provide a user that has permissions above or at least equal to the Jira user created during the installation.
+When migrating from one Jira instance to another - rather than migrating from Zephyr Scale to Xray on the same Jira instance - the migration has the ability to migrate the attachments directly into the target Jira instance if the SSH connection details are provided. For this you need to provide a user that has permissions above or at least equal to the Jira user created during the installation.
 
-### Possible AWS EC2 limitations
+### Possible limitations from AWS EC2
 
-If you are using AWS EC2 instances as source and/or target that are inside the same VPC of the instance running this migration, you might want to disable the [source/destination check](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#change_source_dest_check) for the network interfaces of your source and destination instances. You can do that from the AWS EC2 console: select the instance, click on "Actions", then click on "Networking", then on "Change source/destination check". In the dialog that appears make sure "Stop" is selected and save.
+If you are using AWS EC2 instances as the Jira source and/or target, and they are inside the same VPC of an EC2 instance that is running this migration process, you might want to disable the [source/destination check](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#change_source_dest_check) for the network interfaces of your source and destination instances. You can do that from the AWS EC2 console: select the instance, click on "Actions", then click on "Networking", then on "Change source/destination check". In the dialog that appears make sure "Stop" is selected and save.
 
 ## Migration Usage
 
