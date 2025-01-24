@@ -11,6 +11,7 @@
 - [Migration Limitations](#migration-limitations)
   - [Limitations inherited from Xray and Jira](#limitations-inherited-from-xray-and-jira)
   - [Limitations of the migration script](#limitations-of-the-migration-script)
+  - [Possible AWS EC2 limitations](#possible-aws-ec2-limitations)
 - [Migration Usage](#migration-usage)
   - [Docker and GitHub repository preparation](#docker-and-github-repository-preparation)
   - [Container setup](#container-setup)
@@ -204,6 +205,10 @@ There are a few limitations on the migration caused by Jira.
 ### Limitations of the migration script
 
 The migration script has the ability to migrate the attachments directly in Jira if provided with an SSH connection details. To do such thing you need to provide a user that has permissions above or at least equal to the Jira user created during the installation.
+
+### Possible AWS EC2 limitations
+
+If you are using different AWS EC2 instances as source and target but that are inside the same VPC, you have to use the private IP addresses of the instances to connect them. The public IP addresses are not routable between VPCs.
 
 ## Migration Usage
 
