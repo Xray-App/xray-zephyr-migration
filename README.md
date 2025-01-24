@@ -210,7 +210,7 @@ The migration script has the ability to migrate the attachments directly in Jira
 
 ### Possible AWS EC2 limitations
 
-If you are using different AWS EC2 instances as source and target but that are inside the same VPC, you have to use the private IP addresses of the instances to connect them. The public IP addresses are not routable between VPCs.
+If you are using AWS EC2 instances as source and/or target that are inside the same VPC of the instance running this migration, you might want to disable the [source/destination check](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html#change_source_dest_check) for your source and destination instances. You can do that from the AWS EC2 console: select the instance, click on "Actions", then click on "Networking", then on "Change source/destination check". In the dialog that appears make sure "Stop" is selected and save.
 
 ## Migration Usage
 
