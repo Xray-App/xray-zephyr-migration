@@ -29,8 +29,8 @@
   - [Removing the Docker container](#removing-the-docker-container)
   - [Additional commands](#additional-commands)
   - [Checking the status of the containers](#checking-the-status-of-the-containers)
-  - [Windows destination](#windows-destination)
-  - [Install and configure OpenSSH Server](#install-and-configure-openssh-server)
+  - [Windows as the Jira destination](#windows-as-the-jira-destination)
+    - [Install and configure OpenSSH server on Windows](#install-and-configure-openssh-server-on-windows)
 
 ## Overview
 
@@ -739,13 +739,13 @@ The three possible statuses for the Zephyr migration container are:
 - `stopped`: The container was found and has stopped.
 
 
-### Windows destination
+### Windows as the Jira destination
 
-This migration tool supports Jira running on Windows as source and target out of the box. The only limitation is for the attachments migration.
+This migration tool supports Jira running on Windows as the source Jira and/or the target Jira. The only limitation is that SSH on Windows is needed for migrating attachment files in a multiple Jira migration scenario.
 
-### Install and configure OpenSSH Server
+#### Install and configure OpenSSH server on Windows
 
-To have the attachments migrated directly to the target instance you can provide the details of the SSH connection. Here are the details of how to configure the OpenSSH server on the target instance.
+To have the attachments migrated directly to the target Jira instance, you can provide the details of an SSH connection. Here are the details of how to configure OpenSSH server on a target Windows instance.
 
 To install OpenSSH server follow the next steps.
 
@@ -755,13 +755,13 @@ Open PowerShell as Administrator and run the following command:
 Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
 ```
 
-If OpneSSHServer is not installed then:
+If OpenSSH server is not installed then:
 
 ```powershell
 Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
 ```
 
-and start it with:
+And start it with:
 
 ```powershell
 Start-Service sshd
@@ -773,7 +773,7 @@ Now configure it to start automatically at boot time:
 Set-Service -Name sshd -StartupType 'Automatic'
 ```
 
-and make sure the firewall rule is enabled:
+And make sure the firewall rule is enabled:
 
 ```powershell
 if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
@@ -781,7 +781,7 @@ if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyCon
 }
 ```
 
-Edit the sshd_config file at C:\ProgramData\ssh\sshd_config and make sure only the following lines are present and not commented out:
+Edit the sshd_config file at `C:\ProgramData\ssh\sshd_config` and make sure only the following lines are present and not commented out:
 
 ```
 Port 38922
@@ -805,13 +805,13 @@ Restart-Service sshd
 
 Now create a new key pair on the client machine:
 
-```zsh
+```powershell
 ssh-keygen -t ed25519
 ```
 
-save it somewhere safe, we will use it later.
+Save it somewhere safe, we will use it later.
 
-Now copy the public key to the authorized_keys file at C:\Users\Administrator\.ssh\authorized_keys and set the correct permissions:
+Now copy the public key to the authorized_keys file at `C:\Users\Administrator\.ssh\authorized_keys` and set the correct permissions:
 
 ```powershell
 # Create .ssh directory if it doesn't exist
@@ -835,7 +835,7 @@ icacls $env:USERPROFILE\.ssh\authorized_keys /grant "SYSTEM:(F)"
 Restart-Service sshd
 ```
 
-Now you should be able to ssh in the instance using the following command:
+Now you should be able to SSH into the instance using the following command:
 
 ```zsh
 ssh -p 38922 -i ~/.ssh/your_key_file Administrator@sl-jira-win.com
