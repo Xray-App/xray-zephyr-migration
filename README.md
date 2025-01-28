@@ -197,9 +197,9 @@ During the migration process, the Zephyr Scale attachment files will be copied t
 There are a few limitations of the migration caused by Xray's use of Jira for storing certain entities.
 
 1. You can only migrate up to 3 step custom fields: Jira allows only up to 6 custom fields on case steps but 3 are already in use (they are step, data and expected results).
-1. You can have migrate up to 12 test run custom fields: Jira allows only up to 12 custom fields on test runs.
+1. You can only migrate up to 12 test run custom fields: Jira allows only up to 12 custom fields on test runs.
 1. Test cycle folders: test cycle folders don't really have a use in Xray, so they are not migrated.
-1. Test plans folders: test plans folders are migrated, but they serve a different purposes in Xray. They are still collections of test cases, instead of plans, even if they collect test cases inside the same plan.
+1. Test plans folders: test plans folders are migrated, but they serve a different purposes in Xray. They are collections of test cases, instead of plans, even if they collect test cases inside the same plan.
 1. Multi-line string custom fields: these custom fields in Jira don't support markdown or HTML formatting. Even if the content is migrated as markdown text, so as to not lose any of the formatting, some things in the markdown won't be rendered, like attachments. Links are automatically formatted to be clickable in Jira. This is valid for Test, Test Execution and Test Plan custom fields (since they are Jira fields). Test Runs do support markdown since they are Xray fields.
 1. In Zephyr Scale, all 3 script types (PLAIN_TEXT, BDD, STEP_BY_STEP) can have actual results. Instead Xray only have the actual results for STEP_BY_STEP scripts. So the actual results for the other scripts are not migrated.
 1. For PLAIN_TEXT scripts, in Zephyr Scale the script can contains attachments. In Xray, that's a simple text field, so images are not supported. Any inline attachments are migrated as Test attachments instead.
@@ -307,6 +307,29 @@ _Xray_
 1. Enter the name of the Jira/Xray database (`jiradb` by default).
 1. Enter the database user name to connect to the Jira/Xray database (`jirauser` by default).
 1. Enter the database user password for the Jira/Xray database.
+
+_Same instance_
+
+1. Reply `y` if the source and target are the same Jira instance.
+
+_Attachments method_
+
+1. Reply `w`, `win` or `windows` if the target Jira/Xray is running on Windows.
+
+_SFTP_
+
+If you are using SFTP, you will need to provide the following information:
+
+1. Enter the target SSH host name (e.g. `localhost` or `your-xray-domain.com`).
+1. Enter the target SSH port (e.g. `22`).
+1. Enter the target SSH username (e.g. `jirauser`).
+1. Enter the target SSH key(s) path (e.g. `~/.ssh/key1.pem,~/.ssh/key2.pem`).
+
+_Local_
+
+If you are copying attachments locally, you will need to provide the following information:
+
+1. Enter the path to the Xray attachment storage location on the target Jira/Xray instance.
 
 Once done, you should see the message `Excellent, your Xray Zephyr Docker is now configured!`.
 
