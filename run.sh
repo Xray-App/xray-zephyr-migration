@@ -112,8 +112,6 @@ CheckDockerEngineVersion() {
     echo "Please upgrade Docker Engine to version $MIN_DOCKER_ENGINE_VERSION or higher"
     exit 1
   fi
-
-  echo "✓ Docker Engine version $current_version meets minimum requirement ($MIN_DOCKER_ENGINE_VERSION)"
 }
 # Docker iamge and container handing
 
@@ -397,28 +395,34 @@ CopySSHKeys() {
 
 # Migration handling
 
+EnvVars() {
+  # Get the env vars from the .env file
+  echo "-e ZEPHYR_REST_TIMEOUT=$ZEPHYR_BASE_URL -e ZEPHYR_REST_OPEN_TIMEOUT=$ZEPHYR_REST_OPEN_TIMEOUT -e TERMINAL_LOG_LEVEL=$TERMINAL_LOG_LEVEL -e FILE_LOG_LEVEL=$FILE_LOG_LEVEL"
+}
+
 Extract() {
+  echo "DBG: $(EnvVars)"
   Welcome "Extracting the Zephyr Scale projects..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects
 }
 
 DryExtract() {
   Welcome "Extracting the Zephyr Scale projects (dry run)..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/extract_projects --dry
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects --dry
 }
 
 Migrate() {
   Welcome "Migrating the Zephyr Scale projects to Xray..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }
 
 DryMigrate() {
   Welcome "Migrating the Zephyr Scale projects to Xray (dry run)..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/migrate_projects --dry
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --dry
 }
 
 # Report
@@ -426,19 +430,19 @@ DryMigrate() {
 Report() {
   Welcome "Generating the migration reconciliation report..."
   CanGo
-  docker exec -it $DOCKER_CONTAINER_NAME util/run_report zephyr
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME util/run_report zephyr
 }
 
 # Clean
 
 CleanMigration() {
   Welcome "Cleaning migrated data..."
-  docker exec -it $DOCKER_CONTAINER_NAME zephyr/clean_migration
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/clean_migration
 }
 
 CleanRest() {
   Welcome "Cleaning extracted Zephyr Scale data..."
-  docker exec -it $DOCKER_CONTAINER_NAME util/clean_rest_tables
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME util/clean_rest_tables
 }
 
 
