@@ -140,7 +140,7 @@ The table below illustrates the mappings between Zephyr Scale and Xray.
 > [Windows PowerShell](https://learn.microsoft.com/en-us/powershell/) with [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) should suffice, if it is the only option, but it has not been tested.
 
 3. Install [Git](https://git-scm.com/) on the computer running the migration.
-1. Install [Docker](https://docs.docker.com/get-docker/) and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
+1. Install [Docker](https://docs.docker.com/get-docker/) version 24+ and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
 1. Allocate at least 16 gigabytes (GB) of RAM for running the Docker containers. The Docker default is 50% of the computer's RAM, so the default is sufficient on a computer with 32GB+ of RAM. You can adjust the amount of memory allocated to Docker from the [Docker Desktop settings](https://docs.docker.com/desktop/settings/mac/#advanced).
 
 6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
@@ -219,7 +219,7 @@ If you are using AWS EC2 instances as the Jira source and/or target, and they ar
 1. Clone [this GitHub repository](https://github.com/Xray-App/xray-zephyr-migration) if you haven't already, with this command:
 
 ```console
-git clone git@github.com:xray-app/xray-zephyr-migration
+git clone https://github.com/xray-app/xray-zephyr-migration.git
 ```
 
 2. Log in to GitHub, and from [settings](https://github.com/settings/tokens), click "Generate new token" and generate a (classic) personal access token (PAT). You must provide a token name, such as `Xray migration`, an expiration, and the following scope:
@@ -245,6 +245,9 @@ echo $GHCR_PAT | docker login ghcr.io -u $GHCR_USER --password-stdin
 cd xray-zephyr-migration
 ./run.sh start
 ```
+
+> [!WARNING]
+> If inside a container (like Docker), ensure you're not hitting thread/pid limits imposed by the container runtime. This should not occur if you are using Docker version 24+.
 
 2. The script begins by pulling the `xray-zephyr-migration` image from the GHCR.
 1. After the image is pulled, you should see the following message:
