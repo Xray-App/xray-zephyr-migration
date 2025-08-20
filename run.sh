@@ -32,6 +32,7 @@ ATTACHMENTS_METHOD_FILE=$PWD/attachments_method.txt
 XRAY_ATTACHMENTS_FILE=./config/xray/attachments_path.txt
 # Xray and Zephyr Configuration
 XRAY_ZEPHYR_MIGRATION_CONFIGURED=./config/xray/configured.txt
+MIN_DOCKER_ENGINE_VERSION=24.0.2
 
 # Attachments paths
 
@@ -81,6 +82,39 @@ MaybeCollectXrayAttachmentsPath() {
   fi
 }
 
+CheckDockerEngineVersion() {
+  # Check if Docker is installed and running
+  if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed or not in PATH"
+    exit 1
+  fi
+
+  # Check if Docker daemon is running
+  if ! docker info &> /dev/null; then
+    echo "Error: Docker daemon is not running"
+    exit 1
+  fi
+
+  # Get current Docker Engine version
+  current_version=$(docker version --format '{{.Server.Version}}' 2>/dev/null)
+  if [ -z "$current_version" ]; then
+    echo "Error: Could not determine Docker Engine version"
+    exit 1
+  fi
+
+  # Extract version numbers for comparison (remove any build metadata)
+  current_version_clean=$(echo "$current_version" | cut -d'-' -f1)
+  min_version_clean=$(echo "$MIN_DOCKER_ENGINE_VERSION" | cut -d'-' -f1)
+
+  # Compare versions using sort -V (version sort)
+  if [ "$(printf '%s\n' "$current_version_clean" "$min_version_clean" | sort -V | head -n1)" != "$min_version_clean" ]; then
+    echo "Error: Docker Engine version $current_version is lower than required minimum version $MIN_DOCKER_ENGINE_VERSION"
+    echo "Please upgrade Docker Engine to version $MIN_DOCKER_ENGINE_VERSION or higher"
+    exit 1
+  fi
+
+  echo "✓ Docker Engine version $current_version meets minimum requirement ($MIN_DOCKER_ENGINE_VERSION)"
+}
 # Docker iamge and container handing
 
 CreateImage() {
@@ -498,6 +532,9 @@ Run() {
     echo "Unknown command: $1"
   fi
 }
+
+# Always check the docker engine version
+CheckDockerEngineVersion
 
 # If no start parameter was specified, print the help and ask for the command
 if [ -z "$1" ]; then
