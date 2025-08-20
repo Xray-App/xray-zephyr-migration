@@ -296,7 +296,7 @@ export FILE_LOG_LEVEL = 'DEBUG'
 
 The available log levels are `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, and `UNKNOWN`, in order of increasing severity.
 
-### Note on Zephyr Timeout settings
+### Note on Zephyr Scale API Timeout settings
 
 The migration scripts use two timeout settings when communicating with the Zephyr Scale API:
 
