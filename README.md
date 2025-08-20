@@ -282,6 +282,34 @@ If the path you enter does not already exist, you can choose to have it created 
 
 8. The container should have a status of `running`. You are now ready to configure the migration.
 
+### Note on Terminal and File logging
+
+The test migration scripts will log to the terminal and a logging file as they run.
+Log files are written to the `/logs` directory. Each run of a script will create a new log file with a timestamped name.
+By default, Terminal logging is set to `INFO` level, and File logging is set to `DEBUG` level (which is more verbose).
+You can adjust the logging levels by setting environment variables, e.g.:
+
+```zsh
+export TERMINAL_LOG_LEVEL = 'INFO'
+export FILE_LOG_LEVEL = 'DEBUG'
+```
+
+The available log levels are `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, and `UNKNOWN`, in order of increasing severity.
+
+### Note on Zephyr Timeout settings
+
+The migration scripts use two timeout settings when communicating with the Zephyr Scale API:
+
+- `ZEPHYR_REST_TIMEOUT`: Controls the timeout for REST API requests to Zephyr Scale (default: 600 seconds)
+- `ZEPHYR_REST_OPEN_TIMEOUT`: Controls the connection timeout when opening connections to Zephyr Scale (default: 600 seconds)
+
+You can adjust these timeout values by setting environment variables, e.g.:
+
+```zsh
+export ZEPHYR_REST_TIMEOUT=600
+export ZEPHYR_REST_OPEN_TIMEOUT=600
+```
+
 ### Migration configuration
 
 Run the following command to configure settings for Zephyr Scale and Xray:
