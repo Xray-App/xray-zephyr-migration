@@ -419,6 +419,18 @@ Migrate() {
   docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects
 }
 
+MigrateOnlyAttachments() {
+  Welcome "Migrating the Zephyr Scale attachments to Xray..."
+  CanGo
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --only-attachments
+}
+
+MigrateSkipAttachments() {
+  Welcome "Migrating the Zephyr Scale projects without attachments to Xray..."
+  CanGo
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --skip-attachments
+}
+
 DryMigrate() {
   Welcome "Migrating the Zephyr Scale projects to Xray (dry run)..."
   CanGo
@@ -466,7 +478,7 @@ Go() {
 
 Help() {
   Welcome
-  echo -e "Usage: $0 start|stop|status|reset|configure|status|enumerate|migrate|migrate-attachments|clean|clean-extracted-data"
+  echo -e "Usage: $0 start|stop|status|reset|configure|status|enumerate|migrate|migrate-only-attachments|migrate-skip-attachments|clean|clean-extracted-data"
   echo -e ""
   echo -e "* go"
   echo -e "  One shot start and setup\n"
@@ -484,6 +496,10 @@ Help() {
   echo -e "  Create the project tables necessary for the migration to Xray\n"
   echo -e "* migrate"
   echo -e "  Migrate the projects\n"
+  echo -e "* migrate-only-attachments"
+  echo -e "  Migrate only the attachments\n"
+  echo -e "* migrate-skip-attachments"
+  echo -e "  Migrate the projects without attachments\n"
   echo -e "* report"
   echo -e "  Generate the reconciliation report\n"
   echo -e "* clean"
@@ -518,6 +534,10 @@ Run() {
     DryExtract
   elif [ "$1" == "migrate" ]; then
     Migrate
+  elif [ "$1" == "migrate-only-attachments" ]; then
+    MigrateOnlyAttachments
+  elif [ "$1" == "migrate-skip-attachments" ]; then
+    MigrateSkipAttachments
   elif [ "$1" == "dry-migrate" ]; then
     DryMigrate
   elif [ "$1" == "report" ]; then
