@@ -140,7 +140,7 @@ The table below illustrates the mappings between Zephyr Scale and Xray.
 > [Windows PowerShell](https://learn.microsoft.com/en-us/powershell/) with [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install) should suffice, if it is the only option, but it has not been tested.
 
 3. Install [Git](https://git-scm.com/) on the computer running the migration.
-1. Install [Docker](https://docs.docker.com/get-docker/) version 24+ and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration.
+1. Install [Docker](https://docs.docker.com/get-docker/) and docker-compose (which is included with [Docker Desktop](https://www.docker.com/products/docker-desktop/)) on the computer running the migration. It is recommended that you use Docker version 28+, and required that you use Docker version 24+.
 1. Allocate at least 16 gigabytes (GB) of RAM for running the Docker containers. The Docker default is 50% of the computer's RAM, so the default is sufficient on a computer with 32GB+ of RAM. You can adjust the amount of memory allocated to Docker from the [Docker Desktop settings](https://docs.docker.com/desktop/settings/mac/#advanced).
 
 6. Verify that the computer running the migration has access to the Postgres database of the Jira instance that is the target of the migration. You will need:
@@ -296,7 +296,7 @@ export FILE_LOG_LEVEL = 'DEBUG'
 
 The available log levels are `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, and `UNKNOWN`, in order of increasing severity.
 
-### Note on Zephyr Timeout settings
+### Note on Zephyr Scale API Timeout settings
 
 The migration scripts use two timeout settings when communicating with the Zephyr Scale API:
 
