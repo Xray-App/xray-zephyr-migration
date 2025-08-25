@@ -401,10 +401,10 @@ EnvVars() {
 }
 
 Extract() {
-  echo "DBG: $(EnvVars)"
+  shift  # Remove the 'extract' command, leaving only the flags
   Welcome "Extracting the Zephyr Scale projects..."
   CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects "$@"
 }
 
 DryExtract() {
@@ -414,21 +414,10 @@ DryExtract() {
 }
 
 Migrate() {
+  shift  # Remove the 'migrate' command, leaving only the flags
   Welcome "Migrating the Zephyr Scale projects to Xray..."
   CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects
-}
-
-MigrateOnlyAttachments() {
-  Welcome "Migrating the Zephyr Scale attachments to Xray..."
-  CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --only-attachments
-}
-
-MigrateSkipAttachments() {
-  Welcome "Migrating the Zephyr Scale projects without attachments to Xray..."
-  CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --skip-attachments
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects "$@"
 }
 
 DryMigrate() {
@@ -493,13 +482,9 @@ Help() {
   echo -e "* configure-attachments"
   echo -e "  Set the attachments path for Zephyr Scale and Xray\n"
   echo -e "* extract"
-  echo -e "  Create the project tables necessary for the migration to Xray\n"
+  echo -e "  Create the project tables necessary for the migration to Xray, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-additional-info, --skip-additional-info, --only-comments, --skip-comments\n"
   echo -e "* migrate"
-  echo -e "  Migrate the projects\n"
-  echo -e "* migrate-only-attachments"
-  echo -e "  Migrate only the attachments\n"
-  echo -e "* migrate-skip-attachments"
-  echo -e "  Migrate the projects without attachments\n"
+  echo -e "  Migrate the projects, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-comments, --skip-comments\n"
   echo -e "* report"
   echo -e "  Generate the reconciliation report\n"
   echo -e "* clean"
@@ -529,15 +514,11 @@ Run() {
   elif [ "$1" == "status" ]; then
     Status
   elif [ "$1" == "extract" ]; then
-    Extract
+    Extract "$@"
   elif [ "$1" == "dry-extract" ]; then
     DryExtract
   elif [ "$1" == "migrate" ]; then
-    Migrate
-  elif [ "$1" == "migrate-only-attachments" ]; then
-    MigrateOnlyAttachments
-  elif [ "$1" == "migrate-skip-attachments" ]; then
-    MigrateSkipAttachments
+    Migrate "$@"
   elif [ "$1" == "dry-migrate" ]; then
     DryMigrate
   elif [ "$1" == "report" ]; then
@@ -571,5 +552,5 @@ if [ -z "$1" ]; then
     Run $command
   fi
 else
-  Run $1
+  Run $@
 fi
