@@ -396,8 +396,21 @@ CopySSHKeys() {
 # Migration handling
 
 EnvVars() {
+  echo_string=""
+  if [ -n "$ZEPHYR_BASE_URL" ]; then
+    echo_string="-e ZEPHYR_REST_TIMEOUT=$ZEPHYR_REST_TIMEOUT"
+  fi
+  if [ -n "$ZEPHYR_REST_OPEN_TIMEOUT" ]; then
+    echo_string="$echo_string -e ZEPHYR_REST_OPEN_TIMEOUT=$ZEPHYR_REST_OPEN_TIMEOUT"
+  fi
+  if [ -n "$TERMINAL_LOG_LEVEL" ]; then
+    echo_string="$echo_string -e TERMINAL_LOG_LEVEL=$TERMINAL_LOG_LEVEL"
+  fi
+  if [ -n "$FILE_LOG_LEVEL" ]; then
+    echo_string="$echo_string -e FILE_LOG_LEVEL=$FILE_LOG_LEVEL"
+  fi
   # Get the env vars from the .env file
-  echo "-e ZEPHYR_REST_TIMEOUT=$ZEPHYR_BASE_URL -e ZEPHYR_REST_OPEN_TIMEOUT=$ZEPHYR_REST_OPEN_TIMEOUT -e TERMINAL_LOG_LEVEL=$TERMINAL_LOG_LEVEL -e FILE_LOG_LEVEL=$FILE_LOG_LEVEL"
+  echo "$echo_string"
 }
 
 Extract() {
