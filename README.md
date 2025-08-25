@@ -95,6 +95,9 @@ This means there are 6 possible cases, as seen in this table.
 | Same Jira      | new Xray project / same Jira      | convert non-Xray project / same Jira      | migrate data to existing Xray project / same Jira      |
 | Different Jira | new Xray project / different Jira | convert non-Xray project / different Jira | migrate data to existing Xray project / different Jira |
 
+> [!NOTE]
+> If the target project already exists but is not an Xray project, please follow [this guide to enable Xray for your project](https://docs.getxray.app/space/XRAY/301502490/Quick+Setup#Enable-Xray-in-your-projects) before running the migration.
+
 ### Multiple Jira Instance Migration
 
 <img src="https://github.com/xray-app/xray-zephyr-migration/raw/main/assets/Zephyr-Scale-to-Xray-Migration-with-Different-Jira-Instances.drawio.png" alt="Migration with different Jira instances"/>
@@ -587,6 +590,27 @@ Example:
 ```yml
 add_to_admin: true
 ```
+
+#### Screen Names Configuration
+
+The following screen name configurations are commented out by default in the Zephyr configuration file. You will need to uncomment these values and ensure they match the screen names configured in your Xray instance.
+
+```yml
+# Screen names
+# Test cases
+xray_default_test_screen_name: Xray Default Test Screen
+xray_view_test_screen_name: Xray View Test Screen
+
+# Test plans
+xray_default_test_plan_screen_name: Xray Default Test Plan Screen
+xray_view_test_plan_screen_name: Xray View Test Plan Screen
+
+# Test execution
+xray_default_test_execution_screen_name: Xray Default Test Execution Screen
+xray_view_test_execution_screen_name: Xray View Test Execution Screen
+```
+
+If you're unsure about the correct screen names to use, check your Xray project configuration.
 
 #### Connection Options
 
