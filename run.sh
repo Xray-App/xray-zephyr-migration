@@ -409,6 +409,15 @@ EnvVars() {
   if [ -n "$FILE_LOG_LEVEL" ]; then
     echo_string="$echo_string -e FILE_LOG_LEVEL=$FILE_LOG_LEVEL"
   fi
+  if [ -n "$ZEPHYR_THREAD_COUNT" ]; then
+    echo_string="$echo_string -e ZEPHYR_THREAD_COUNT=$ZEPHYR_THREAD_COUNT"
+  fi
+  if [ -n "$ZEPHYR_RETRY_MAX" ]; then
+    echo_string="$echo_string -e ZEPHYR_RETRY_MAX=$ZEPHYR_RETRY_MAX"
+  fi
+  if [ -n "$ZEPHYR_RETRY_INTERVAL" ]; then
+    echo_string="$echo_string -e ZEPHYR_RETRY_INTERVAL=$ZEPHYR_RETRY_INTERVAL"
+  fi
   # Get the env vars from the .env file
   echo "$echo_string"
 }
@@ -420,23 +429,11 @@ Extract() {
   docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects "$@"
 }
 
-DryExtract() {
-  Welcome "Extracting the Zephyr Scale projects (dry run)..."
-  CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/extract_projects --dry
-}
-
 Migrate() {
   shift  # Remove the 'migrate' command, leaving only the flags
   Welcome "Migrating the Zephyr Scale projects to Xray..."
   CanGo
   docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects "$@"
-}
-
-DryMigrate() {
-  Welcome "Migrating the Zephyr Scale projects to Xray (dry run)..."
-  CanGo
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/migrate_projects --dry
 }
 
 # Report
@@ -450,13 +447,15 @@ Report() {
 # Clean
 
 CleanMigration() {
+  shift  # Remove the 'clean' command, leaving only the flags
   Welcome "Cleaning migrated data..."
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/clean_migration
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME zephyr/clean_migration "$@"
 }
 
 CleanRest() {
+  shift  # Remove the 'clean' command, leaving only the flags
   Welcome "Cleaning extracted Zephyr Scale data..."
-  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME util/clean_rest_tables
+  docker exec -it $(EnvVars) $DOCKER_CONTAINER_NAME util/clean_rest_tables "$@"
 }
 
 
@@ -501,9 +500,9 @@ Help() {
   echo -e "* report"
   echo -e "  Generate the reconciliation report\n"
   echo -e "* clean"
-  echo -e "  Clean the migration\n"
+  echo -e "  Clean the migration, you can use these flags: --only-attachments and --only-comments\n"
   echo -e "* clean-extracted-data"
-  echo -e "  Clean extracted Zephyr Scale data\n"
+  echo -e "  Clean extracted Zephyr Scale data, you can use these flags: --only-attachments and --only-comments\n"
   echo -e "* reset"
   echo -e "  Reset the Zephyr Scale to Xray migration\n"
 }
@@ -528,18 +527,14 @@ Run() {
     Status
   elif [ "$1" == "extract" ]; then
     Extract "$@"
-  elif [ "$1" == "dry-extract" ]; then
-    DryExtract
   elif [ "$1" == "migrate" ]; then
     Migrate "$@"
-  elif [ "$1" == "dry-migrate" ]; then
-    DryMigrate
   elif [ "$1" == "report" ]; then
     Report
   elif [ "$1" == "clean" ]; then
-    CleanMigration
+    CleanMigration "$@"
   elif [ "$1" == "clean-extracted-data" ]; then
-    CleanRest
+    CleanRest "$@"
   elif [ "$1" == "reset" ]; then
     Reset
   elif [ "$1" == "help" ]; then
