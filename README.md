@@ -774,22 +774,25 @@ The output of which is as follows:
   One shot start and setup
 
 * start
-  Start xray-zephyr-migration container
+  Start the xray-zephyr-migration container
 
 * stop
-  Stop xray-zephyr-migration container
+  Stop the xray-zephyr-migration container
 
 * status
   Show the status of the xray-zephyr-migration container
 
 * configure
-  Collect the Zephyr and Xray configuration
+  Setup the Zephyr Scale and Xray configuration
+
+* configure-attachments
+  Set the attachments path for Zephyr Scale and Xray
 
 * extract
-  Create the project tables necessary for the migration to Xray
+  Create the project tables necessary for the migration to Xray, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-additional-info, --skip-additional-info, --only-comments, --skip-comments
 
 * migrate
-  Migrate the projects
+  Migrate the projects, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-comments, --skip-comments
 
 * report
   Generate the reconciliation report
@@ -798,10 +801,10 @@ The output of which is as follows:
   Clean the migration
 
 * clean-extracted-data
-  Clean extracted tables
+  Clean extracted Zephyr Scale data
 
 * reset
-  Reset the Xray Data Migration
+  Reset the Zephyr Scale to Xray migration
 ```
 
 ### Checking the status of the containers
