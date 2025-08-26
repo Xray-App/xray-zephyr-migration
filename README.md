@@ -593,7 +593,8 @@ add_to_admin: true
 
 #### Screen Names Configuration
 
-The following screen name configurations are commented out by default in the Zephyr configuration file. You will need to uncomment these values and ensure they match the screen names configured in your Xray instance.
+If you manually enabled Xray for your project following the instructions in the [enable Xray for your project](https://docs.getxray.app/space/XRAY/301502490/Quick+Setup#Enable-Xray-in-your-projects) guide, you likely used the Xray default screen names.
+You will need to uncomment these values and ensure they match the screen names configured in your Xray instance.
 
 ```yml
 # Screen names
@@ -610,7 +611,7 @@ xray_default_test_execution_screen_name: Xray Default Test Execution Screen
 xray_view_test_execution_screen_name: Xray View Test Execution Screen
 ```
 
-If you're unsure about the correct screen names to use, check your Xray project configuration.
+If you're unsure about the correct screen names to use, you can find them under Project Settings > Screens > Edit screens. Use the "Default" and "View issue" screen names only for the following issue types: Test, Test Plan, and Test Execution.
 
 #### Connection Options
 
