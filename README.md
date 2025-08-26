@@ -789,7 +789,13 @@ The output of which is as follows:
   Create the project tables necessary for the migration to Xray
 
 * migrate
-  Migrate the projects
+  You can control what data gets migrated with these flags:
+  - --only-attachments: Migrate only attachment files, skipping other data types
+  - --skip-attachments: Skip migration of attachment files
+  - --only-custom-fields: Migrate only custom fields skipping other data types
+  - --skip-custom-fields: Skip migration of custom fields
+  - --only-comments: Migrate only comment data, skipping other data types
+  - --skip-comments: Skip migration of comment data
 
 * report
   Generate the reconciliation report
