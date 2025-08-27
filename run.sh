@@ -490,8 +490,8 @@ Go() {
   echo "The Zephyr Scale to Xray migration setup is complete! Now you can extract the Zephyr Scale data with './run.sh extract' and then migrate it to Xray with './run.sh migrate'. See './run.sh help' for more information."
 }
 
-DockerBash() {
-  Welcome "Opening a bash session in the Docker container..."
+DockerConnect() {
+  Welcome "Connecting to the Docker container..."
   docker exec -it $DOCKER_CONTAINER_NAME bash
 }
 
@@ -523,8 +523,8 @@ Help() {
   echo -e "  Clean the migration, you can use these flags: --only-attachments and --only-comments\n"
   echo -e "* clean-extracted-data"
   echo -e "  Clean extracted Zephyr Scale data, you can use these flags: --only-attachments and --only-comments\n"
-  echo -e "* bash"
-  echo -e "  Open a bash session in the Docker container\n"
+  echo -e "* connect"
+  echo -e "  Connect to the Docker container\n"
   echo -e "* reset"
   echo -e "  Reset the Zephyr Scale to Xray migration: clean up the docker container, image, volumes and the configuration files\n"
   echo -e "* reset-docker"
@@ -567,8 +567,8 @@ Run() {
     Help
   elif [ "$1" == "copy-ssh-keys" ]; then
     MaybeCopySSHKeys
-  elif [ "$1" == "bash" ]; then
-    DockerBash
+  elif [ "$1" == "connect" ]; then
+    DockerConnect
   else
     echo "Unknown command: $1"
   fi
