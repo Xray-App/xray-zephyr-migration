@@ -76,7 +76,7 @@ CollectXrayAttachmentsPath() {
 
 # Collect the Xray attachments path if doesn't exists yet
 MaybeCollectXrayAttachmentsPath() {
-  force_collect_attachments=$1
+  force_collect_attachments=${1:-0}
   if [ ! -f $XRAY_ATTACHMENTS_FILE ] || [ $force_collect_attachments -eq 1 ]; then
     CollectXrayAttachmentsPath
   fi
@@ -231,6 +231,21 @@ StopAndRemoveContainer() {
   # Remove the container
   echo "Removing the Docker container..."
   docker container rm $DOCKER_CONTAINER_NAME
+}
+
+ResetDocker() {
+  Welcome "Resetting the Docker image, container and volumens..."
+  # Prompt if the user is sure to reset, make sure they are going to delete the configs, logs and reports
+  read -p "Are you sure you want to reset the Docker image, container and volumens? (y/n) " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ ! $REPLY =~ ^[Yy]$ ]]
+  then
+    exit 1
+  fi
+  StopAndRemoveContainer
+  # Remove the image
+  echo "Removing the Docker image..."
+  docker image rm $DOCKER_IMAGE
 }
 
 Reset() {
@@ -475,6 +490,11 @@ Go() {
   echo "The Zephyr Scale to Xray migration setup is complete! Now you can extract the Zephyr Scale data with './run.sh extract' and then migrate it to Xray with './run.sh migrate'. See './run.sh help' for more information."
 }
 
+DockerBash() {
+  Welcome "Opening a bash session in the Docker container..."
+  docker exec -it $DOCKER_CONTAINER_NAME bash
+}
+
 # Help
 
 Help() {
@@ -503,8 +523,12 @@ Help() {
   echo -e "  Clean the migration, you can use these flags: --only-attachments and --only-comments\n"
   echo -e "* clean-extracted-data"
   echo -e "  Clean extracted Zephyr Scale data, you can use these flags: --only-attachments and --only-comments\n"
+  echo -e "* bash"
+  echo -e "  Open a bash session in the Docker container\n"
   echo -e "* reset"
-  echo -e "  Reset the Zephyr Scale to Xray migration\n"
+  echo -e "  Reset the Zephyr Scale to Xray migration: clean up the docker container, image, volumes and the configuration files\n"
+  echo -e "* reset-docker"
+  echo -e "  Reset the Docker image, container and volumens, useful to start over but conserving the config files\n"
 }
 
 # Run
@@ -537,10 +561,14 @@ Run() {
     CleanRest "$@"
   elif [ "$1" == "reset" ]; then
     Reset
+  elif [ "$1" == "reset-docker" ]; then
+    ResetDocker
   elif [ "$1" == "help" ]; then
     Help
   elif [ "$1" == "copy-ssh-keys" ]; then
     MaybeCopySSHKeys
+  elif [ "$1" == "bash" ]; then
+    DockerBash
   else
     echo "Unknown command: $1"
   fi
