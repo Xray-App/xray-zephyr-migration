@@ -789,10 +789,12 @@ The output of which is as follows:
   Set the attachments path for Zephyr Scale and Xray
 
 * extract
-  Create the project tables necessary for the migration to Xray, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-additional-info, --skip-additional-info, --only-comments, --skip-comments
+  Create the project tables necessary for the migration to Xray, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-additional-info, --skip-additional-info, --only-comments, --skip-comments,
+  --only-plans-cycles-runs, --skip-plans-cycles-runs
 
 * migrate
-  Migrate the projects, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-comments, --skip-comments
+  Migrate the projects, you can use these flags: --only-attachments, --skip-attachments, --only-custom-fields, --skip-custom-fields, --only-comments, --skip-comments,
+   --only-plans-cycles-runs, --skip-plans-cycles-runs
 
 * report
   Generate the reconciliation report
